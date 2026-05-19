@@ -2,6 +2,7 @@
   <div
     class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12 px-4"
   >
+    <div class="max-w-3xl mx-auto w-full">
     <header class="w-full pt-4 sm:pt-12 pb-3 sm:pb-6">
       <h1
         class="text-center text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
@@ -135,6 +136,7 @@
         </div>
       </div>
     </section>
+    </div>
   </div>
 </template>
 

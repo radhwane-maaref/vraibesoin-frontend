@@ -13,6 +13,21 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: "/",
+      name: "landing",
+      component: () => import("@/views/LandingPageView.vue"),
+      beforeEnter: (to, from) => {
+        const authStore = useAuthStore();
+        if (authStore.isAuthenticated) {
+          return authStore.user?.is_staff
+            ? { name: "admin-dashboard" }
+            : { name: "dashboard" };
+        }
+        return true;
+      },
+      meta: { hideBottomNav: true },
+    },
+    {
       path: "/login",
       name: "login",
       component: LoginView,

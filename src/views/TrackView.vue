@@ -2,7 +2,6 @@
   <div
     class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12 px-4"
   >
-    <!-- Header -->
     <header class="w-full pt-4 sm:pt-12 pb-3 sm:pb-6">
       <h1
         class="text-center text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
@@ -12,7 +11,6 @@
     </header>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col">
-      <!-- Horizontal Tab Selector -->
       <div class="flex justify-center mb-8">
         <div
           class="bg-[#E5E7EB]/60 rounded-[16px] p-1.5 flex w-full max-w-md relative shadow-inner"
@@ -42,26 +40,21 @@
         </div>
       </div>
 
-      <!-- Section 1: Intentions d'achat en cours (Affichée seulement si l'onglet est 'reflexion') -->
       <section v-if="activeTab === 'reflexion'" class="mb-10 animate-fade-in">
         <div v-if="visibleActiveItems.length > 0" class="flex flex-col gap-4">
-          <!-- Active Items List -->
           <div
             v-for="item in visibleActiveItems"
             :key="item.id"
             class="bg-[#FFFFFF] rounded-[20px] p-5 shadow-sm"
           >
-            <!-- Header -->
             <div class="flex justify-between items-center mb-1">
               <h3 class="text-base font-bold text-[#000000]">
                 {{ item.name }}
               </h3>
-              <span class="text-[15px] font-bold text-[#5B8C85]">
-                {{ item.price }} {{ currencyStore.currentCurrency.code }}
-              </span>
+              <span class="text-[15px] font-bold text-[#5B8C85]"
+                >{{ item.price }} {{ currencyStore.currentCurrency.code }}</span
+              >
             </div>
-
-            <!-- Progress Bar & Timer Area -->
             <div class="mb-4">
               <span
                 class="text-[13px]"
@@ -86,8 +79,6 @@
                 ></div>
               </div>
             </div>
-
-            <!-- Action Buttons (Acheté / Abandonné) -->
             <div class="flex gap-3 sm:gap-4">
               <button
                 @click="updateDecision(item.id, 'ABANDON')"
@@ -104,8 +95,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Empty State -->
         <div
           v-else
           class="text-center bg-white rounded-[20px] p-8 shadow-sm flex flex-col items-center justify-center"
@@ -131,8 +120,6 @@
             Aucune analyse en cours de réflexion.
           </p>
         </div>
-
-        <!-- Voir Plus Toggle -->
         <button
           v-if="activeItems.length > 3"
           @click="showAllActive = !showAllActive"
@@ -154,9 +141,7 @@
         </button>
       </section>
 
-      <!-- Section 2: Historique des analyses (Affichée seulement si l'onglet est 'historique') -->
       <section v-if="activeTab === 'historique'" class="animate-fade-in">
-        <!-- Controls & Filters... -->
         <div class="flex gap-3 mb-6 relative">
           <div
             class="flex-1 flex items-center bg-[#FFFFFF] rounded-[16px] px-4 py-3.5 shadow-sm"
@@ -201,10 +186,26 @@
             </svg>
           </button>
 
-          <!-- Filter Dropdown -->
+          <button
+            @click="showClearHistoryModal = true"
+            class="bg-[#FFFFFF] w-14 rounded-[16px] flex items-center justify-center shadow-sm text-[#D16D6A] hover:text-[#EF4444] hover:bg-[#FEE2E2] transition-colors"
+            title="Effacer l'historique"
+          >
+            <svg
+              class="w-8 h-8 text-red-500"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"
+              />
+            </svg>
+          </button>
+
           <div
             v-if="showFilters"
-            class="absolute top-[60px] right-0 bg-[#FFFFFF] shadow-lg rounded-[16px] p-5 w-72 z-10 border border-[#D9D9D9]/30"
+            class="absolute top-[60px] right-0 bg-[#FFFFFF] shadow-lg rounded-[16px] p-5 w-72 z-20 border border-[#D9D9D9]/30"
           >
             <h4 class="font-bold text-[#000000] mb-2 text-[14px]">
               Filtrer par statut
@@ -217,7 +218,6 @@
                 roundedClass="rounded-[8px]"
               />
             </div>
-
             <hr class="border-[#D9D9D9] mb-4" />
             <h4 class="font-bold text-[#000000] mb-2 text-[14px]">Catégorie</h4>
             <div class="mb-4">
@@ -239,7 +239,6 @@
           </div>
         </div>
 
-        <!-- History List -->
         <div class="flex flex-col gap-3">
           <div
             v-for="item in paginatedHistory"
@@ -255,7 +254,8 @@
               <p
                 class="text-[13px] text-[#6B7280] mt-1 flex items-center flex-wrap gap-1"
               >
-                <span>{{ item.date }}</span> <span class="text-[10px]">•</span>
+                <span>{{ item.date }}</span>
+                <span class="text-[10px]">Title</span>
                 <span>{{ item.category }}</span
                 >•
                 <span class="font-bold text-[#5B8C85]"
@@ -274,15 +274,12 @@
             </span>
           </div>
         </div>
-
         <div
           v-if="paginatedHistory.length === 0"
           class="text-center text-[#999999] py-8"
         >
           Aucun résultat trouvé pour ces filtres.
         </div>
-
-        <!-- Load More -->
         <button
           v-if="hasMoreHistory"
           @click="loadMoreHistory"
@@ -292,6 +289,116 @@
         </button>
       </section>
     </div>
+
+    <div
+      v-if="showClearHistoryModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
+    >
+      <div
+        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+      >
+        <div
+          class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-red-500"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"
+            />
+          </svg>
+        </div>
+        <h3 class="font-bold text-xl text-gray-900 mb-2">
+          Effacer l'historique ?
+        </h3>
+        <p class="text-gray-500 text-sm mb-6 leading-relaxed">
+          Cette action supprime toutes vos analyses et statistiques passées.
+          Vous repartirez à zéro. Êtes-vous sûr de vouloir continuer ?
+        </p>
+        <div class="flex gap-3">
+          <button
+            @click="showClearHistoryModal = false"
+            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            @click="confirmClearHistory"
+            :disabled="isClearingHistory"
+            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors disabled:opacity-50"
+          >
+            {{ isClearingHistory ? "Effacement..." : "Oui, effacer" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showNotificationModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
+    >
+      <div
+        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+      >
+        <div
+          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          :class="
+            notificationType === 'success'
+              ? 'bg-green-50 text-green-500'
+              : 'bg-red-50 text-red-500'
+          "
+        >
+          <svg
+            v-if="notificationType === 'success'"
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+          <svg
+            v-else
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </div>
+        <h3 class="font-bold text-xl text-gray-900 mb-2">
+          {{ notificationType === "success" ? "Succès !" : "Oups..." }}
+        </h3>
+        <p class="text-gray-500 text-sm mb-6 leading-relaxed">
+          {{ notificationMessage }}
+        </p>
+        <button
+          @click="showNotificationModal = false"
+          class="w-full py-3.5 rounded-xl font-bold text-white transition-colors"
+          :class="
+            notificationType === 'success'
+              ? 'bg-[#5B8C85] hover:bg-[#4a736d]'
+              : 'bg-[#EF4444] hover:bg-red-600'
+          "
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -299,14 +406,16 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
+import { useAuthStore } from "@/stores/auth";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 
 const currencyStore = useCurrencyStore();
+const authStore = useAuthStore();
 
 // Gestion des onglets
-const activeTab = ref("reflexion"); // 'reflexion' | 'historique'
+const activeTab = ref("reflexion");
 
-// Options pour les CustomSelects de filtrage
+// Options
 const statusOptions = [
   { value: "all", label: "Tous les statuts" },
   { value: "Acheté", label: "Acheté" },
@@ -321,9 +430,14 @@ const sortOptions = [
 ];
 
 const categoryOptions = ref([{ value: "all", label: "Toutes catégories" }]);
-// ==========================================
-// SECTION 1: INTENTIONS EN COURS
-// ==========================================
+
+// Variables modales
+const showClearHistoryModal = ref(false);
+const isClearingHistory = ref(false);
+const showNotificationModal = ref(false);
+const notificationType = ref("success");
+const notificationMessage = ref("");
+
 const showAllActive = ref(false);
 const activeItems = ref([]);
 let countdownInterval = null;
@@ -334,31 +448,22 @@ const visibleActiveItems = computed(() => {
     : activeItems.value.slice(0, 3);
 });
 
-// Calcule la différence de temps en temps réel
 const calculateProgress = () => {
   const now = new Date().getTime();
-
   activeItems.value.forEach((item) => {
     if (!item.expiresAt) return;
-
     const expires = new Date(item.expiresAt).getTime();
     const updated = new Date(item.updatedAt).getTime();
-
     const totalDuration = expires - updated;
     const remainingTime = expires - now;
-
     if (remainingTime <= 0) {
       item.timeLeft = "Expiré";
       item.progress = 0;
     } else {
-      // Conversion en HH:MM:SS
       const h = Math.floor(remainingTime / (1000 * 60 * 60));
       const m = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
       item.timeLeft = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-
-      // Barre de progression (% restant)
       item.progress = Math.max(
         0,
         Math.min(100, (remainingTime / totalDuration) * 100),
@@ -367,13 +472,11 @@ const calculateProgress = () => {
   });
 };
 
-// Charge les intentions avec statut = 'Attendre' (qui correspond à CALM)
 const fetchActiveIntentions = async () => {
   try {
     const response = await api.get("/purchase-intentions/history/", {
       params: { status: "Attendre", page_size: 50 },
     });
-
     activeItems.value = response.data.results.map((item) => ({
       id: item.id,
       name: item.product_name,
@@ -383,20 +486,17 @@ const fetchActiveIntentions = async () => {
       timeLeft: "Calcul...",
       progress: 100,
     }));
-
-    calculateProgress(); // Force le premier calcul immédiatement
+    calculateProgress();
   } catch (error) {
     console.error("Erreur chargement analyses en cours:", error);
   }
 };
 
-// Clôturer une analyse (Acheté / Abandonné)
 const updateDecision = async (id, decisionCode) => {
   try {
     await api.patch(`/purchase-intentions/${id}/final-decision/`, {
       user_final_decision: decisionCode,
     });
-    // On rafraîchit la page : l'item passe des 'actifs' vers l'historique
     fetchActiveIntentions();
     fetchHistory(true);
   } catch (err) {
@@ -405,8 +505,34 @@ const updateDecision = async (id, decisionCode) => {
 };
 
 // ==========================================
-// SECTION 2: HISTORIQUE
+// SECTION EFFACEMENT HISTORIQUE
 // ==========================================
+const confirmClearHistory = async () => {
+  isClearingHistory.value = true;
+  try {
+    await api.post("/users/me/clear-history/");
+    showClearHistoryModal.value = false;
+    notificationType.value = "success";
+    notificationMessage.value =
+      "Votre historique a été effacé avec succès. Vous repartez à zéro !";
+    showNotificationModal.value = true;
+
+    // Rafraîchir les données de la vue courante
+    fetchHistory(true);
+    // Rafraîchir les statistiques utilisateur au niveau global
+    await authStore.fetchUserProfile();
+  } catch (err) {
+    console.error("Erreur lors de l'effacement de l'historique :", err);
+    showClearHistoryModal.value = false;
+    notificationType.value = "error";
+    notificationMessage.value =
+      "Une erreur est survenue lors de l'effacement. Veuillez réessayer.";
+    showNotificationModal.value = true;
+  } finally {
+    isClearingHistory.value = false;
+  }
+};
+
 const searchQuery = ref("");
 const showFilters = ref(false);
 const filterStatus = ref("all");
@@ -419,10 +545,7 @@ const currentPage = ref(1);
 const hasMoreHistory = ref(false);
 
 const mapStatusToLabel = (dbStatus) => {
-  const map = {
-    BUY: "Acheté",
-    ABANDON: "Abandonné",
-  };
+  const map = { BUY: "Acheté", ABANDON: "Abandonné" };
   return map[dbStatus] || "Inconnu";
 };
 
@@ -481,11 +604,7 @@ watch([searchQuery, filterStatus, filterCategory, filterPrice, sortBy], () => {
   fetchHistory(true);
 });
 
-// ==========================================
-// CYCLE DE VIE
-// ==========================================
 onMounted(async () => {
-  // Fetch dynamic categories
   try {
     const catResponse = await api.get("/categories/");
     categoryOptions.value = [
@@ -495,21 +614,17 @@ onMounted(async () => {
   } catch (error) {
     console.error("Erreur lors du chargement des catégories :", error);
   }
-
   fetchActiveIntentions();
   fetchHistory(true);
-
   countdownInterval = setInterval(calculateProgress, 1000);
 });
 
 onUnmounted(() => {
-  // Détruit le chronomètre quand on quitte la page pour éviter les fuites de mémoire
   if (countdownInterval) clearInterval(countdownInterval);
 });
 </script>
 
 <style scoped>
-/* Animation douce lors du basculement d'onglets */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out forwards;
 }

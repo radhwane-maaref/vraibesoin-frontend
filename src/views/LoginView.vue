@@ -283,7 +283,7 @@ const { login: loginWithGoogle } = useTokenClient({
     googleError.value = "";
     try {
       await authStore.googleLogin(response.access_token);
-      router.push("/dashboard");
+      await router.push("/dashboard");
     } catch (err) {
       console.error("Erreur SSO Google :", err);
 

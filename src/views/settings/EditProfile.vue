@@ -1,5 +1,6 @@
 <template>
   <div class="flex-grow bg-[#F6F5F2] flex flex-col px-6 py-6 dm-sans">
+    <div class="max-w-3xl mx-auto w-full flex flex-col flex-grow">
     <header class="flex items-center justify-between mb-8 relative">
       <button
         @click="router.back()"
@@ -244,6 +245,7 @@
         </button>
       </div>
     </form>
+    </div>
   </div>
 </template>
 

@@ -3,10 +3,8 @@
   <div class="min-h-screen bg-[#F8F6F2] font-sans pb-24 flex justify-center">
     <!-- Conteneur central avec une largeur maximale (max-w-3xl) -->
     <div class="w-full max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
-      <header class="mb-6 sm:mb-8">
-        <h1
-          class="text-2xl sm:text-3xl font-serif font-bold text-gray-900 tracking-tight"
-        >
+      <header class="flex items-center justify-between mb-8 relative">
+        <h1 class="absolute w-full text-center text-xl font-bold text-gray-900">
           Paramètres
         </h1>
       </header>

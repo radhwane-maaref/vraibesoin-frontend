@@ -2,24 +2,15 @@
   <div
     class="min-h-screen bg-[#F8F6F2] px-4 sm:px-6 py-8 font-sans pb-24 overflow-x-hidden no-scrollbar w-full relative"
   >
-    <header class="mb-8">
-      <h1
-        class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 tracking-tight"
-      >
+    <div class="max-w-3xl mx-auto w-full">
+    <header class="flex items-center justify-between mb-8 relative">
+      <h1 class="absolute w-full text-center text-xl font-bold text-gray-900">
         Panneau d'administration
       </h1>
     </header>
 
     <div class="space-y-8 sm:space-y-12">
       <section>
-        <div class="mb-4">
-          <h2
-            class="text-sm font-bold text-gray-600 uppercase tracking-widest pl-2"
-          >
-            Impact Global
-          </h2>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div
             class="bg-gradient-to-r from-[#5B8C85] to-[#4a736d] rounded-[24px] p-5 sm:p-6 shadow-sm text-white relative flex flex-col justify-between min-h-[160px] w-full"
@@ -232,7 +223,7 @@
           <h2
             class="text-sm font-bold text-gray-600 uppercase tracking-widest pl-2"
           >
-            Répartition par Catégorie
+            Répartition des analyses par Catégorie
           </h2>
           <div class="flex flex-row items-center gap-2 w-full md:w-auto">
             <div class="flex-1 md:flex-none md:w-[120px]">
@@ -355,14 +346,6 @@
       </section>
 
       <section>
-        <div class="mb-4">
-          <h2
-            class="text-sm font-bold text-gray-600 uppercase tracking-widest pl-2"
-          >
-            Efficacité de l'IA
-          </h2>
-        </div>
-
         <div class="space-y-6">
           <div
             class="bg-white rounded-[24px] shadow-sm border border-gray-100 p-4 sm:p-5 relative border-l-4 w-full"
@@ -635,6 +618,7 @@
           </div>
         </div>
       </section>
+    </div>
     </div>
 
     <Teleport to="body">
