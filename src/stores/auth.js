@@ -62,7 +62,7 @@ export const useAuthStore = defineStore("auth", () => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await api.post("/auth/google/", { access_token: token });
+      const response = await api.post("/auth/google/", { token: token });
 
       const { access, refresh } = response.data.tokens;
       localStorage.setItem("access_token", access);

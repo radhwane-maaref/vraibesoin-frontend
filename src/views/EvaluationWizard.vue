@@ -1,19 +1,24 @@
 <template>
   <div class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12">
+    <div class="max-w-3xl mx-auto w-full h-full flex flex-col">
     <div class="relative z-10 border-b border-gray-100 bg-white/50">
-      <header class="px-6 py-5 flex justify-center items-center relative">
-        <h1 class="text-xl font-bold text-gray-900 text-center">
+      <header
+        class="px-4 sm:px-6 py-4 sm:py-5 flex justify-center items-center relative max-w-3xl mx-auto w-full"
+      >
+        <h1
+          class="text-lg sm:text-xl font-bold text-gray-900 text-center truncate px-10"
+        >
           <span v-if="currentStep === 'QUESTIONS'">Interrogatoire</span>
           <span v-else-if="currentStep === 'LOADING'">Vrai Besoin</span>
           <span v-else>Décision finale</span>
         </h1>
         <button
           @click="showCancelModal = true"
-          class="absolute right-4 p-2 text-gray-400 rounded-full hover:text-gray-700 hover:bg-gray-200 active:bg-gray-300 transition-all"
+          class="absolute right-2 sm:right-4 p-2 text-gray-400 rounded-full hover:text-gray-700 hover:bg-gray-200 active:bg-gray-300 transition-all"
           aria-label="Fermer"
         >
           <svg
-            class="w-6 h-6"
+            class="w-5 h-5 sm:w-6 sm:h-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -30,11 +35,11 @@
 
       <div
         v-if="currentStep === 'QUESTIONS'"
-        class="px-6 pb-4 w-full max-w-lg mx-auto"
+        class="px-4 sm:px-6 pb-4 w-full max-w-lg mx-auto"
       >
         <div class="flex justify-between items-center mb-2">
           <span
-            class="text-xs font-bold text-[#5A877E] uppercase tracking-wider"
+            class="text-[10px] sm:text-xs font-bold text-[#5A877E] uppercase tracking-wider"
           >
             Question {{ activeQuestionIndex + 1 }} sur 3
           </span>
@@ -50,9 +55,9 @@
 
     <main
       v-if="currentStep === 'GENERATING_QUESTIONS'"
-      class="flex-grow flex flex-col items-center justify-center px-6"
+      class="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 mt-12 sm:mt-20"
     >
-      <div class="relative w-24 h-24 mb-8">
+      <div class="relative w-20 h-20 sm:w-24 sm:h-24 mb-6 sm:mb-8">
         <div
           class="absolute inset-0 border-4 border-[#E1EBE8] rounded-full"
         ></div>
@@ -61,7 +66,7 @@
         ></div>
         <div class="absolute inset-0 flex items-center justify-center">
           <svg
-            class="w-8 h-8 text-[#5A877E] animate-pulse"
+            class="w-6 h-6 sm:w-8 sm:h-8 text-[#5A877E] animate-pulse"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -75,36 +80,40 @@
           </svg>
         </div>
       </div>
-      <h2 class="text-2xl font-serif font-bold text-gray-900 mb-2">
+      <h2
+        class="text-xl sm:text-2xl font-serif font-bold text-gray-900 mb-2 text-center"
+      >
         Préparation du coach...
       </h2>
-      <p class="text-gray-500 text-center text-sm px-4 leading-relaxed">
+      <p
+        class="text-gray-500 text-center text-xs sm:text-sm px-4 leading-relaxed max-w-xs mx-auto"
+      >
         L'IA analyse votre profil et conçoit un interrogatoire sur-mesure.
       </p>
     </main>
 
     <main
       v-else-if="currentStep === 'QUESTIONS'"
-      class="flex-grow flex flex-col items-center pt-8 px-4 pb-6"
+      class="flex-grow flex flex-col items-center pt-6 sm:pt-8 px-4 pb-6"
     >
       <div v-if="currentQuestion" class="w-full max-w-lg flex flex-col h-full">
-        <div class="space-y-6 flex-grow">
+        <div class="space-y-4 sm:space-y-6 flex-grow">
           <div
-            class="bg-white px-8 py-10 rounded-[2rem] shadow-md border border-gray-100 text-center flex flex-col justify-center min-h-[140px]"
+            class="bg-white px-5 py-8 sm:px-8 sm:py-10 rounded-3xl sm:rounded-[2rem] shadow-md border border-gray-100 text-center flex flex-col justify-center min-h-[120px] sm:min-h-[140px]"
           >
             <h2
-              class="text-xl sm:text-2xl font-serif font-medium text-[#1F2937] leading-relaxed max-w-md mx-auto"
+              class="text-lg sm:text-2xl font-serif font-medium text-[#1F2937] leading-relaxed max-w-md mx-auto"
             >
               {{ currentQuestion.question_text }}
             </h2>
           </div>
 
-          <div class="space-y-4">
+          <div class="space-y-3 sm:space-y-4">
             <button
               v-for="(option, idx) in currentQuestion.ai_options"
               :key="idx"
               @click="selectOption(option)"
-              class="w-full p-5 rounded-2xl text-base font-medium transition-all duration-200 ease-out text-left border shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+              class="w-full p-4 sm:p-5 rounded-2xl text-sm sm:text-base font-medium transition-all duration-200 ease-out text-left border shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
               :class="
                 selectedAnswer === option
                   ? 'border-[#5A877E] bg-[#E1EBE8] text-[#5A877E] shadow-md ring-2 ring-[#5A877E]/20'
@@ -119,7 +128,7 @@
                 v-model="customAnswerText"
                 type="text"
                 placeholder="Précisez votre pensée..."
-                class="w-full p-5 border rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:outline-none transition-all duration-200"
+                class="w-full p-4 sm:p-5 border rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:outline-none transition-all duration-200 text-sm sm:text-base"
                 :class="
                   customAnswerText.trim()
                     ? 'border-[#5A877E] ring-4 ring-[#E1EBE8]/50 bg-white'
@@ -132,7 +141,7 @@
             <button
               v-else
               @click="enableCustomInput"
-              class="w-full p-5 rounded-2xl text-base font-medium bg-white border border-gray-100 text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-gray-300 hover:bg-gray-50 hover:shadow-md transition-all duration-200 ease-out text-left"
+              class="w-full p-4 sm:p-5 rounded-2xl text-sm sm:text-base font-medium bg-white border border-gray-100 text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-gray-300 hover:bg-gray-50 hover:shadow-md transition-all duration-200 ease-out text-left"
             >
               Autre (saisir une réponse)
             </button>
@@ -143,14 +152,14 @@
           <button
             @click="goPrevious"
             :disabled="activeQuestionIndex === 0"
-            class="flex-1 px-6 py-2 rounded-2xl font-medium transition-all bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed"
+            class="flex-1 px-4 sm:px-6 py-3 sm:py-2 rounded-2xl text-sm sm:text-base font-medium transition-all bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:cursor-not-allowed"
           >
             Précédent
           </button>
           <button
             @click="goNext"
             :disabled="!currentAnswerValid"
-            class="flex-1 py-2 px-6 rounded-2xl font-medium transition-all bg-[#5A877E] text-white shadow-sm hover:bg-[#4a7269] hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:bg-[#5A877E] disabled:cursor-not-allowed"
+            class="flex-1 px-4 sm:px-6 py-3 sm:py-2 rounded-2xl text-sm sm:text-base font-medium transition-all bg-[#5A877E] text-white shadow-sm hover:bg-[#4a7269] hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:bg-[#5A877E] disabled:cursor-not-allowed"
           >
             {{ activeQuestionIndex === 2 ? "Obtenir mon verdict" : "Suivant" }}
           </button>
@@ -160,31 +169,33 @@
 
     <main
       v-else-if="currentStep === 'LOADING'"
-      class="flex-grow flex flex-col items-center justify-center px-6"
+      class="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 mt-12 sm:mt-20"
     >
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Analyse en cours...</h2>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+        Analyse en cours...
+      </h2>
       <div
-        class="w-full max-w-sm bg-white rounded-full h-8 overflow-hidden shadow-sm border border-gray-100 p-1"
+        class="w-full max-w-xs sm:max-w-sm bg-white rounded-full h-6 sm:h-8 overflow-hidden shadow-sm border border-gray-100 p-1"
       >
         <div
           class="bg-gradient-to-r from-[#5A877E] to-[#80E8C4] h-full rounded-full transition-all duration-300 ease-out"
           :style="{ width: progressPercentage + '%' }"
         ></div>
       </div>
-      <p class="mt-4 text-xl font-bold text-gray-800">
+      <p class="mt-3 sm:mt-4 text-lg sm:text-xl font-bold text-gray-800">
         {{ progressPercentage }}%
       </p>
     </main>
 
     <main
       v-else-if="currentStep === 'RESULT'"
-      class="flex-grow flex flex-col px-4 pb-8"
+      class="flex-grow flex flex-col px-4 sm:px-6 pt-6 pb-8 w-full max-w-3xl mx-auto"
     >
       <div
-        class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm mb-6"
+        class="flex items-center gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl shadow-sm mb-4 sm:mb-6"
       >
         <div
-          class="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100"
+          class="w-14 h-14 sm:w-16 sm:h-16 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-100"
         >
           <img
             v-if="intentionData.product_image"
@@ -194,7 +205,7 @@
           />
           <svg
             v-else
-            class="w-8 h-8 text-gray-300"
+            class="w-6 h-6 sm:w-8 sm:h-8 text-gray-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -203,15 +214,15 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="1.5"
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
         </div>
-        <div>
-          <h3 class="font-bold text-lg text-gray-900">
+        <div class="min-w-0 flex-1">
+          <h3 class="font-bold text-base sm:text-lg text-gray-900 truncate">
             {{ intentionData.product_name }}
           </h3>
-          <p class="text-gray-400 font-semibold">
+          <p class="text-gray-400 font-semibold text-sm sm:text-base">
             {{ intentionData.product_price }}
             {{ currencyStore.currentCurrency.code }}
           </p>
@@ -219,15 +230,17 @@
       </div>
 
       <div
-        class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col"
+        class="bg-white p-5 sm:p-8 rounded-3xl shadow-sm border border-gray-100 mb-6 sm:mb-8 flex flex-col"
       >
-        <h4 class="font-bold text-lg mb-4 text-gray-800 text-center">
+        <h4
+          class="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-gray-800 text-center"
+        >
           Verdict final
         </h4>
 
         <div
           v-if="intentionData.ai_verdict"
-          class="w-fit mx-auto mb-5 flex items-center gap-3 px-6 py-3 rounded-2xl border"
+          class="w-fit mx-auto mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl border"
           :class="{
             'bg-[#FEE2E2]/50 border-[#FEE2E2] text-[#EF4444]':
               intentionData.ai_verdict === 'BUY',
@@ -239,7 +252,7 @@
         >
           <svg
             v-if="intentionData.ai_verdict === 'BUY'"
-            class="w-6 h-6 flex-shrink-0"
+            class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -253,7 +266,7 @@
           </svg>
           <svg
             v-else-if="intentionData.ai_verdict === 'CALM'"
-            class="w-6 h-6 flex-shrink-0"
+            class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -267,7 +280,7 @@
           </svg>
           <svg
             v-else-if="intentionData.ai_verdict === 'ABANDON'"
-            class="w-6 h-6 flex-shrink-0"
+            class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -279,82 +292,89 @@
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-
-          <span class="font-bold text-base tracking-wide flex-grow">
-            {{ formatVerdict(intentionData.ai_verdict) }}
-          </span>
+          <span class="font-bold text-sm sm:text-base tracking-wide">{{
+            formatVerdict(intentionData.ai_verdict)
+          }}</span>
         </div>
 
         <p
-          class="text-gray-600 leading-relaxed whitespace-pre-wrap text-center"
+          class="text-gray-600 text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-center"
         >
           {{ intentionData.ai_reasoning }}
         </p>
       </div>
 
-      <div class="space-y-4 mt-auto pt-3">
-        <p class="text-center text-sm text-gray-400 mb-4">
+      <div class="mt-auto">
+        <p class="text-center text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
           Quelle est ta décision finale ?
         </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <button
+            @click="triggerAction('BUY')"
+            class="relative w-full flex flex-col items-center py-3 sm:py-4 rounded-2xl transition-all duration-200"
+            :class="[
+              intentionData.ai_verdict === 'BUY'
+                ? 'bg-[#FEE2E2] ring-4 ring-red-100 border-2 border-red-400 shadow-md scale-[1.02]'
+                : 'bg-[#FEE2E2] hover:bg-red-200 border-2 border-transparent',
+            ]"
+          >
+            <span
+              v-if="intentionData.ai_verdict === 'BUY'"
+              class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#EF4444] border-2 border-[#FEE2E2] text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest py-1 px-3 sm:px-4 rounded-full shadow-sm whitespace-nowrap"
+              >Recommandé</span
+            >
+            <span class="font-bold text-[#EF4444] text-base sm:text-lg"
+              >Acheter</span
+            >
+            <span class="text-[10px] sm:text-xs text-red-400"
+              >J'en ai vraiment besoin</span
+            >
+          </button>
 
-        <button
-          @click="triggerAction('BUY')"
-          class="relative w-full flex flex-col items-center py-4 rounded-2xl transition-all duration-200"
-          :class="[
-            intentionData.ai_verdict === 'BUY'
-              ? 'bg-[#FEE2E2] ring-4 ring-red-100 border-2 border-red-400 shadow-md scale-[1.02]'
-              : 'bg-[#FEE2E2] hover:bg-red-200 border-2 border-transparent',
-          ]"
-        >
-          <span
-            v-if="intentionData.ai_verdict === 'BUY'"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#EF4444] border-2 border-[#FEE2E2] text-[10px] font-extrabold uppercase tracking-widest py-1 px-4 rounded-full shadow-sm whitespace-nowrap"
+          <button
+            @click="triggerAction('CALM')"
+            class="relative w-full flex flex-col items-center py-3 sm:py-4 rounded-2xl transition-all duration-200"
+            :class="[
+              intentionData.ai_verdict === 'CALM'
+                ? 'bg-[#FEF3C7] ring-4 ring-yellow-100 border-2 border-yellow-400 shadow-md scale-[1.02]'
+                : 'bg-[#FEF3C7] hover:bg-yellow-200 border-2 border-transparent',
+            ]"
           >
-            Recommandé
-          </span>
-          <span class="font-bold text-[#EF4444] text-lg">Acheter</span>
-          <span class="text-xs text-red-400">J'en ai vraiment besoin</span>
-        </button>
+            <span
+              v-if="intentionData.ai_verdict === 'CALM'"
+              class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#D97706] border-2 border-[#FEF3C7] text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest py-1 px-3 sm:px-4 rounded-full shadow-sm whitespace-nowrap"
+              >Recommandé</span
+            >
+            <span class="font-bold text-[#D97706] text-base sm:text-lg"
+              >Attendre</span
+            >
+            <span class="text-[10px] sm:text-xs text-yellow-500"
+              >Réfléchir {{ cooldownHours }}h de plus</span
+            >
+          </button>
 
-        <button
-          @click="triggerAction('CALM')"
-          class="relative w-full flex flex-col items-center py-4 rounded-2xl transition-all duration-200"
-          :class="[
-            intentionData.ai_verdict === 'CALM'
-              ? 'bg-[#FEF3C7] ring-4 ring-yellow-100 border-2 border-yellow-400 shadow-md scale-[1.02]'
-              : 'bg-[#FEF3C7] hover:bg-yellow-200 border-2 border-transparent',
-          ]"
-        >
-          <span
-            v-if="intentionData.ai_verdict === 'CALM'"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#D97706] border-2 border-[#FEF3C7] text-[10px] font-extrabold uppercase tracking-widest py-1 px-4 rounded-full shadow-sm whitespace-nowrap"
+          <button
+            @click="triggerAction('ABANDON')"
+            class="relative w-full flex flex-col items-center justify-center py-3 sm:py-4 rounded-2xl transition-all duration-200"
+            :class="[
+              intentionData.ai_verdict === 'ABANDON'
+                ? 'bg-[#E1EBE8] ring-4 ring-[#E1EBE8]/60 border-2 border-[#5A877E] shadow-md scale-[1.02]'
+                : 'bg-[#E1EBE8] hover:bg-[#cbe3dc] border-2 border-transparent',
+            ]"
           >
-            Recommandé
-          </span>
-          <span class="font-bold text-[#D97706] text-lg">Attendre</span>
-          <span class="text-xs text-yellow-500"
-            >Réfléchir {{ cooldownHours }}h de plus</span
-          >
-        </button>
-
-        <button
-          @click="triggerAction('ABANDON')"
-          class="relative w-full flex flex-col items-center justify-center py-4 rounded-2xl transition-all duration-200"
-          :class="[
-            intentionData.ai_verdict === 'ABANDON'
-              ? 'bg-[#E1EBE8] ring-4 ring-[#E1EBE8]/60 border-2 border-[#5A877E] shadow-md scale-[1.02]'
-              : 'bg-[#E1EBE8] hover:bg-[#cbe3dc] border-2 border-transparent',
-          ]"
-        >
-          <span
-            v-if="intentionData.ai_verdict === 'ABANDON'"
-            class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#5A877E] border-2 border-[#E1EBE8] text-[10px] font-extrabold uppercase tracking-widest py-1 px-4 rounded-full shadow-sm whitespace-nowrap"
-          >
-            Recommandé
-          </span>
-          <span class="font-bold text-[#5A877E] text-lg">Abandonner</span>
-          <span class="text-xs text-[#5A877E]/70">Je sauve mon budget</span>
-        </button>
+            <span
+              v-if="intentionData.ai_verdict === 'ABANDON'"
+              class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-[#5A877E] border-2 border-[#E1EBE8] text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest py-1 px-3 sm:px-4 rounded-full shadow-sm whitespace-nowrap"
+              >Recommandé</span
+            >
+            <span class="font-bold text-[#5A877E] text-base sm:text-lg"
+              >Abandonner</span
+            >
+            <span class="text-[10px] sm:text-xs text-[#5A877E]/70"
+              >Je sauve mon budget</span
+            >
+          </button>
+        </div>
       </div>
     </main>
 
@@ -363,13 +383,13 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
     >
       <div
-        class="bg-white p-6 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+        class="bg-white p-5 sm:p-6 rounded-3xl sm:rounded-[2rem] w-full max-w-[90%] sm:max-w-sm text-center shadow-2xl border border-gray-100"
       >
         <div
-          class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
         >
           <svg
-            class="w-8 h-8 text-red-500"
+            class="w-6 h-6 sm:w-8 sm:h-8 text-red-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -382,23 +402,25 @@
             />
           </svg>
         </div>
-        <h3 class="font-bold text-xl text-gray-900 mb-2">
+        <h3 class="font-bold text-lg sm:text-xl text-gray-900 mb-2">
           Annuler l'analyse ?
         </h3>
-        <p class="text-gray-500 text-sm mb-8 leading-relaxed">
+        <p
+          class="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed"
+        >
           Si tu quittes maintenant, toutes les données de cette réflexion seront
           perdues.
         </p>
-        <div class="flex gap-3">
+        <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
           <button
             @click="showCancelModal = false"
-            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+            class="w-full sm:flex-1 py-3 sm:py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors text-sm sm:text-base"
           >
             Continuer
           </button>
           <button
             @click="executeCancel"
-            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors"
+            class="w-full sm:flex-1 py-3 sm:py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors text-sm sm:text-base"
           >
             Oui, quitter
           </button>
@@ -411,14 +433,14 @@
       class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
     >
       <div
-        class="bg-white p-6 rounded-3xl w-full max-w-sm text-center shadow-xl border border-gray-100"
+        class="bg-white p-5 sm:p-6 rounded-3xl w-full max-w-[90%] sm:max-w-sm text-center shadow-xl border border-gray-100"
       >
         <div
-          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
           :class="modalContent.iconBg"
         >
           <svg
-            class="w-8 h-8"
+            class="w-6 h-6 sm:w-8 sm:h-8"
             :class="modalContent.iconColor"
             fill="none"
             viewBox="0 0 24 24"
@@ -432,26 +454,29 @@
             />
           </svg>
         </div>
-        <h3 class="font-bold text-xl mb-2 text-gray-900">
+        <h3 class="font-bold text-lg sm:text-xl mb-2 text-gray-900">
           {{ modalContent.title }}
         </h3>
-        <p class="text-gray-500 text-sm mb-6">{{ modalContent.description }}</p>
-        <div class="flex gap-3">
+        <p class="text-gray-500 text-xs sm:text-sm mb-6">
+          {{ modalContent.description }}
+        </p>
+        <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
           <button
             @click="showModal = false"
-            class="flex-1 py-3 rounded-xl bg-gray-100 font-semibold text-gray-600 hover:bg-gray-200"
+            class="w-full sm:flex-1 py-3 rounded-xl bg-gray-100 font-semibold text-gray-600 hover:bg-gray-200 text-sm sm:text-base"
           >
             Annuler
           </button>
           <button
             @click="submitFinalDecision"
-            class="flex-1 py-3 rounded-xl font-semibold text-white shadow-sm bg-[#5A877E]"
+            class="w-full sm:flex-1 py-3 rounded-xl font-semibold text-white shadow-sm transition-colors text-sm sm:text-base"
             :class="modalContent.btnColor"
           >
             Confirmer
           </button>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12">
+    <div class="max-w-3xl mx-auto w-full h-full flex flex-col">
     <div v-if="step === 1" class="flex flex-col flex-grow relative pb-1">
       <div class="px-6 py-6 flex items-center gap-3 justify-center m-2">
         <h1
@@ -379,7 +380,7 @@
               Vérification...
             </span>
             <span v-else class="flex items-center gap-2">
-              Passer à l'interrogatoire
+              Commencer l'analyse
               <div class="bg-white/20 rounded-full p-1 ml-1">
                 <svg
                   class="w-4 h-4 text-white"
@@ -448,6 +449,7 @@
           </button>
         </div>
       </div>
+    </div>
     </div>
   </div>
   <!-- Fermeture Correcte de la balise racine -->

@@ -2,6 +2,7 @@
   <div
     class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12 px-4 pt-5"
   >
+    <div class="max-w-3xl mx-auto w-full">
     <h1
       class="text-center text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
     >
@@ -73,6 +74,7 @@
         :current-amount="dashboardData.savings_goal.saved_amount"
         :target-amount="dashboardData.savings_goal.target_amount"
       />
+    </div>
     </div>
   </div>
 </template>
