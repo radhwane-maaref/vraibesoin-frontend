@@ -28,7 +28,7 @@ export const useAuthStore = defineStore("auth", () => {
       const response = await api.post("/auth/login/", credentials);
       await handleAuthSuccess(response);
     } catch (err) {
-      error.value = err.response?.data?.error || "Authentication failed.";
+      error.value = err.response?.data?.error || "L'authentification a échoué.";
       throw err;
     } finally {
       loading.value = false;
