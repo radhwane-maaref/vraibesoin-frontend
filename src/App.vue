@@ -3,7 +3,7 @@ import { onMounted } from "vue";
 import { RouterView } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import BottomNavBar from "@/components/BottomNavBar.vue";
-import AdminBottomNavBar from "@/components/AdminBottomNavBar.vue"; // 1. Importer la barre Admin
+import AdminBottomNavBar from "@/components/AdminBottomNavBar.vue";
 
 const authStore = useAuthStore();
 
