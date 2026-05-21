@@ -129,7 +129,7 @@ const handleRequestReset = async () => {
 
       if (typeof data === "string") {
         errorMessage.value =
-          "Erreur serveur critique. Regardez le terminal Django.";
+          "Une erreur inattendue est survenue. Veuillez réessayer plus tard.";
       } else if (data.error) {
         errorMessage.value = data.error;
       } else {
