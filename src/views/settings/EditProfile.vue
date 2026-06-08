@@ -1,250 +1,225 @@
 <template>
   <div class="flex-grow bg-[#F6F5F2] flex flex-col px-6 py-6 dm-sans">
     <div class="max-w-3xl mx-auto w-full flex flex-col flex-grow">
-    <header class="flex items-center justify-between mb-8 relative">
-      <button
-        @click="router.back()"
-        class="text-gray-500 hover:text-gray-800 transition-colors z-10"
+      <header class="flex items-center justify-between mb-8 relative">
+        <button
+          @click="router.back()"
+          class="text-gray-500 hover:text-gray-800 transition-colors z-10 group"
+        >
+          <svg
+            class="w-7 h-7 transition-transform duration-300 group-hover:-translate-x-1 drop-shadow-sm"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+        </button>
+        <h1 class="absolute w-full text-center text-xl font-bold text-gray-900">
+          Mon profil
+        </h1>
+      </header>
+
+      <div
+        v-if="showSuccessMessage"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#538278] to-[#436b62] text-white px-6 py-3 rounded-2xl shadow-lg z-50 flex items-center gap-2 transition-all duration-300"
       >
         <svg
-          class="w-7 h-7"
+          class="w-5 h-5 drop-shadow-sm"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          stroke-width="2.5"
+          stroke-width="2"
         >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            d="M5 13l4 4L19 7"
           />
         </svg>
-      </button>
-      <h1 class="absolute w-full text-center text-xl font-bold text-gray-900">
-        Mon profil
-      </h1>
-    </header>
-    <div
-      v-if="showSuccessMessage"
-      class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-[#538278] text-white px-6 py-3 rounded-2xl shadow-lg z-50 flex items-center gap-2 transition-all duration-300"
-    >
-      <svg
-        class="w-5 h-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
+        <span class="font-medium drop-shadow-sm"
+          >Modifications enregistrées avec succès</span
+        >
+      </div>
+
+      <form
+        @submit.prevent="handleSubmit"
+        class="space-y-4 flex-grow flex flex-col"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-      <span class="font-medium">Modifications enregistrées avec succès</span>
-    </div>
-    <form
-      @submit.prevent="handleSubmit"
-      class="space-y-4 flex-grow flex flex-col"
-    >
-      <div class="space-y-1">
-        <label class="block text-lg font-medium text-gray-900"
-          >Nom complet</label
-        >
-        <input
-          type="text"
-          v-model="formData.full_name"
-          @input="validateField('full_name')"
-          placeholder="Taper votre nom..."
-          class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm"
-          :class="
-            errors.full_name
-              ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
-              : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
-          "
-        />
-        <p
-          v-if="errors.full_name"
-          class="text-xs text-red-500 font-medium ml-2"
-        >
-          {{ errors.full_name }}
-        </p>
-      </div>
-
-      <div class="space-y-1">
-        <label class="block text-lg font-medium text-gray-900">Email</label>
-        <input
-          type="email"
-          v-model="formData.email"
-          readonly
-          class="w-full px-4 py-3.5 border border-gray-200 rounded-2xl outline-none shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed"
-        />
-      </div>
-      <div class="space-y-1">
-        <label class="block text-lg font-medium text-gray-900"
-          >Ancien mot de passe</label
-        >
-        <input
-          type="password"
-          v-model="formData.old_password"
-          placeholder="Votre mot de passe actuel"
-          class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm tracking-widest"
-          :class="
-            errors.old_password
-              ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
-              : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
-          "
-        />
-        <p
-          v-if="errors.old_password"
-          class="text-xs text-red-500 font-medium ml-2 mt-1"
-        >
-          {{ errors.old_password }}
-        </p>
-      </div>
-      <div class="space-y-1">
-        <label class="block text-lg font-medium text-gray-900"
-          >Nouveau mot de passe</label
-        >
-        <input
-          type="password"
-          v-model="formData.new_password"
-          @input="handlePasswordInput"
-          placeholder="Min. 8 caractères"
-          class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm tracking-widest"
-          :class="
-            errors.new_password
-              ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
-              : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
-          "
-        />
-
-        <div
-          v-if="formData.new_password"
-          class="mt-2 px-1 space-y-1.5 transition-all"
-        >
-          <div class="flex justify-between items-center text-xs font-semibold">
-            <span class="text-gray-500">Force :</span>
-            <span :class="passwordStrength.textColor">{{
-              passwordStrength.label
-            }}</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-            <div
-              class="h-1.5 transition-all duration-300 ease-out"
-              :class="passwordStrength.color"
-              :style="{ width: passwordStrength.percent + '%' }"
-            ></div>
-          </div>
+        <div class="space-y-1">
+          <label class="block text-lg font-medium text-gray-900"
+            >Nom complet</label
+          >
+          <input
+            type="text"
+            v-model="formData.full_name"
+            @input="validateField('full_name')"
+            placeholder="Taper votre nom..."
+            class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm focus:shadow-md"
+            :class="
+              errors.full_name
+                ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
+                : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
+            "
+          />
+          <p
+            v-if="errors.full_name"
+            class="text-xs text-red-500 font-medium ml-2"
+          >
+            {{ errors.full_name }}
+          </p>
         </div>
 
-        <p
-          v-if="errors.new_password"
-          class="text-xs text-red-500 font-medium ml-2 mt-1"
-        >
-          {{ errors.new_password }}
-        </p>
-      </div>
+        <div class="space-y-1">
+          <label class="block text-lg font-medium text-gray-900">Email</label>
+          <input
+            type="email"
+            v-model="formData.email"
+            readonly
+            class="w-full px-4 py-3.5 border border-gray-200 rounded-2xl outline-none shadow-inner bg-gray-100 text-gray-500 cursor-not-allowed"
+          />
+        </div>
 
-      <div class="space-y-1">
-        <label class="block text-lg font-medium text-gray-900"
-          >Confirmer nouveau mot de passe</label
-        >
-        <input
-          type="password"
-          v-model="formData.confirm_password"
-          @input="validateField('confirm_password')"
-          placeholder="Répétez le mot de passe"
-          class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm tracking-widest"
-          :class="
-            errors.confirm_password
-              ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
-              : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
-          "
-        />
-        <p
-          v-if="errors.confirm_password"
-          class="text-xs text-red-500 font-medium ml-2"
-        >
-          {{ errors.confirm_password }}
-        </p>
-      </div>
+        <div class="space-y-1">
+          <label class="block text-lg font-medium text-gray-900"
+            >Ancien mot de passe</label
+          >
+          <input
+            type="password"
+            v-model="formData.old_password"
+            placeholder="Votre mot de passe actuel"
+            class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm focus:shadow-md tracking-widest"
+            :class="
+              errors.old_password
+                ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
+                : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
+            "
+          />
+          <p
+            v-if="errors.old_password"
+            class="text-xs text-red-500 font-medium ml-2 mt-1"
+          >
+            {{ errors.old_password }}
+          </p>
+        </div>
 
-      <div class="space-y-1 pt-2">
-        <label class="block text-lg font-medium text-gray-900"
-          >Date de naissance</label
-        >
-        <input
-          type="date"
-          v-model="formData.birth_date"
-          class="w-full px-4 py-3.5 border border-gray-200 rounded-2xl outline-none transition-all shadow-sm bg-white focus:ring-2 focus:ring-[#5A877E] text-gray-600"
-        />
-        <p
-          v-if="errors.birth_date"
-          class="text-xs text-red-500 font-medium ml-2"
-        >
-          {{ errors.birth_date }}
-        </p>
-      </div>
+        <div class="space-y-1">
+          <label class="block text-lg font-medium text-gray-900"
+            >Nouveau mot de passe</label
+          >
+          <input
+            type="password"
+            v-model="formData.new_password"
+            @input="handlePasswordInput"
+            placeholder="Min. 8 caractères"
+            class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm focus:shadow-md tracking-widest"
+            :class="
+              errors.new_password
+                ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
+                : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
+            "
+          />
 
-      <SocioProSelect
-        v-model="formData.socio_professional_categories"
-        :error="errors.socio_professional_categories"
-        @validate="validateField('socio_professional_categories')"
-      />
-
-      <FinancialGoalSelect
-        v-model="formData.financial_goals"
-        :error="errors.financial_goals"
-        @validate="validateField('financial_goals')"
-      />
-
-      <div class="space-y-1 pb-6">
-        <label class="block text-lg font-medium text-gray-900"
-          >Budget mensuel</label
-        >
-        <CustomSelect
-          v-model="formData.monthly_budget"
-          :options="budgetOptions"
-          @change="validateField('monthly_budget')"
-          sizeClass="py-3.5 h-auto text-gray-600 bg-white border-gray-200"
-          roundedClass="rounded-2xl"
-          placeholder="Sélectionnez une tranche"
-        />
-        <p
-          v-if="errors.monthly_budget"
-          class="text-xs text-red-500 font-medium ml-2"
-        >
-          {{ errors.monthly_budget }}
-        </p>
-      </div>
-
-      <div class="mt-auto pt-6 flex justify-center">
-        <button
-          type="submit"
-          :disabled="isSaving"
-          class="w-[280px] bg-[#538278] text-white rounded-full py-3.5 font-medium text-[1.15rem] hover:bg-[#436b62] transition-all active:scale-[0.98] shadow-sm flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          <span v-if="isSaving">Enregistrement...</span>
-          <template v-else>
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
+          <div
+            v-if="formData.new_password"
+            class="mt-2 px-1 space-y-1.5 transition-all"
+          >
+            <div
+              class="flex justify-between items-center text-xs font-semibold"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Enregistrer
-          </template>
-        </button>
-      </div>
-    </form>
+              <span class="text-gray-500">Force :</span>
+              <span :class="passwordStrength.textColor">{{
+                passwordStrength.label
+              }}</span>
+            </div>
+            <div
+              class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden shadow-inner"
+            >
+              <div
+                class="h-1.5 transition-all duration-300 ease-out"
+                :class="passwordStrength.color"
+                :style="{ width: passwordStrength.percent + '%' }"
+              ></div>
+            </div>
+          </div>
+
+          <p
+            v-if="errors.new_password"
+            class="text-xs text-red-500 font-medium ml-2 mt-1"
+          >
+            {{ errors.new_password }}
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-lg font-medium text-gray-900"
+            >Confirmer nouveau mot de passe</label
+          >
+          <input
+            type="password"
+            v-model="formData.confirm_password"
+            @input="validateField('confirm_password')"
+            placeholder="Répétez le mot de passe"
+            class="w-full px-4 py-3.5 rounded-2xl outline-none transition-all shadow-sm focus:shadow-md tracking-widest"
+            :class="
+              errors.confirm_password
+                ? 'border-2 border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50 text-red-700'
+                : 'border border-gray-200 focus:ring-2 focus:ring-[#5A877E] bg-white'
+            "
+          />
+          <p
+            v-if="errors.confirm_password"
+            class="text-xs text-red-500 font-medium ml-2"
+          >
+            {{ errors.confirm_password }}
+          </p>
+        </div>
+
+        <div class="space-y-1 pt-2">
+          <label class="block text-lg font-medium text-gray-900"
+            >Date de naissance</label
+          >
+          <input
+            type="date"
+            v-model="formData.birth_date"
+            class="w-full px-4 py-3.5 border border-gray-200 rounded-2xl outline-none transition-all shadow-sm focus:shadow-md bg-white focus:ring-2 focus:ring-[#5A877E] text-gray-600"
+          />
+          <p
+            v-if="errors.birth_date"
+            class="text-xs text-red-500 font-medium ml-2"
+          >
+            {{ errors.birth_date }}
+          </p>
+        </div>
+
+        <SocioProSelect
+          v-model="formData.socio_professional_categories"
+          :error="errors.socio_professional_categories"
+          @validate="validateField('socio_professional_categories')"
+        />
+
+        <FinancialGoalSelect
+          v-model="formData.financial_goals"
+          :error="errors.financial_goals"
+          @validate="validateField('financial_goals')"
+        />
+
+        <div class="mt-auto pt-6 flex justify-center">
+          <button
+            type="submit"
+            :disabled="isSaving"
+            class="group w-[280px] bg-[#538278] text-white rounded-full py-3.5 font-medium text-[1.15rem] hover:bg-[#436b62] hover:shadow-md transition-all active:scale-[0.98] shadow-sm flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span v-if="isSaving">Enregistrement...</span>
+            <template v-else> Enregistrer </template>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -264,28 +239,7 @@ const authStore = useAuthStore();
 const isSaving = ref(false);
 const currencyStore = useCurrencyStore();
 
-const baseBudgetRanges = [
-  "Je préfère ne pas répondre",
-  "Moins de 500",
-  "500 - 1 000",
-  "1 000 - 2 000",
-  "2 000 - 3 500",
-  "3 500 - 5 000",
-  "5 000 - 8 000",
-  "8 000 - 15 000",
-  "15 000+",
-];
 const showSuccessMessage = ref(false);
-
-const budgetOptions = computed(() => {
-  const currencyCode = currencyStore.currentCurrency.code;
-  return baseBudgetRanges.map((range) => {
-    if (range === "Je préfère ne pas répondre") {
-      return { value: range, label: range };
-    }
-    return { value: range, label: `${range} ${currencyCode}` };
-  });
-});
 
 const formData = reactive({
   full_name: "",
@@ -295,7 +249,7 @@ const formData = reactive({
   confirm_password: "",
   birth_date: "",
   financial_goals: ["Je préfère ne pas répondre"],
-  monthly_budget: null,
+
   socio_professional_categories: ["Préfère ne pas répondre"],
 });
 
@@ -305,7 +259,7 @@ const errors = reactive({
   new_password: null,
   confirm_password: null,
   birth_date: null,
-  monthly_budget: null,
+
   financial_goals: null,
   socio_professional_categories: null,
 });
@@ -315,7 +269,6 @@ onMounted(() => {
     formData.full_name = authStore.user.full_name || "";
     formData.email = authStore.user.email || "";
     formData.birth_date = authStore.user.birth_date || "";
-    formData.monthly_budget = authStore.user.monthly_budget || null;
 
     if (authStore.user.socio_professional_categories?.length > 0) {
       formData.socio_professional_categories = [
@@ -451,7 +404,7 @@ const validateField = (field) => {
 const handleSubmit = async () => {
   validateField("full_name");
   validateField("birth_date");
-  validateField("monthly_budget");
+
   validateField("financial_goals");
   validateField("socio_professional_categories");
 
@@ -478,11 +431,11 @@ const handleSubmit = async () => {
       first_name: nameParts[0] || "",
       last_name: nameParts.slice(1).join(" ") || "",
       birth_date: formData.birth_date || null,
-      financial_goals: [...formData.financial_goals], // Assure un tableau pur
+      financial_goals: [...formData.financial_goals],
       monthly_budget: formData.monthly_budget || null,
       socio_professional_categories: [
         ...formData.socio_professional_categories,
-      ], // Assure un tableau pur
+      ],
     };
 
     if (formData.new_password) {
@@ -504,7 +457,6 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error("Erreur de mise à jour: ", error);
 
-    // FIX : Extraction de toutes les erreurs back-end potentielles pour affichage
     if (error.response?.status === 400 && error.response?.data) {
       const data = error.response.data;
       if (data.old_password) errors.old_password = data.old_password;

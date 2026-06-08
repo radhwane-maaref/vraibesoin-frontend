@@ -18,7 +18,7 @@
             class="text-[#9CA3AF] text-[15px] sm:text-[16px] leading-relaxed max-w-lg"
           >
             Remplissez le formulaire ci-dessous pour laisser un avis ou déposer
-            une reclamation.
+            une réclamation.
           </p>
         </div>
 
@@ -38,15 +38,16 @@
               type="text"
               v-model="form.subject"
               placeholder="Exp : Problème de connexion"
-              class="w-full bg-[#FFFFFF] border border-[#D9D9D9] rounded-[15px] px-4 sm:px-5 py-3 sm:py-4 text-[15px] sm:text-[16px] text-[#000000] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 focus:border-[#5B8C85] transition-all"
+              class="w-full bg-[#FFFFFF] border border-[#D9D9D9] rounded-[15px] px-4 sm:px-5 py-3 sm:py-4 text-[15px] sm:text-[16px] text-[#000000] placeholder-[#9CA3AF] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 focus:border-[#5B8C85] focus:shadow-md transition-all"
               required
             />
           </div>
+
           <div class="flex flex-col gap-3">
             <label class="text-[17px] sm:text-[18px] font-bold text-[#000000]">
               Votre note
             </label>
-            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 group">
               <button
                 v-for="star in 5"
                 :key="star"
@@ -60,11 +61,11 @@
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="currentColor"
-                  class="w-9 h-9 sm:w-10 sm:h-10 transition-colors duration-200"
+                  class="w-9 h-9 sm:w-10 sm:h-10 transition-all duration-300"
                   :class="
                     star <= (hoveredRating || form.rating)
-                      ? 'text-[#FBBF24]'
-                      : 'text-[#D9D9D9]'
+                      ? 'text-[#FBBF24] drop-shadow-md scale-105'
+                      : 'text-[#D9D9D9] drop-shadow-sm'
                   "
                 >
                   <path
@@ -76,6 +77,7 @@
               </button>
             </div>
           </div>
+
           <div class="flex flex-col gap-3">
             <label
               for="message"
@@ -88,7 +90,7 @@
               v-model="form.message"
               rows="6"
               placeholder="Décrivez votre problème en détail ..."
-              class="w-full bg-[#FFFFFF] border border-[#D9D9D9] rounded-[15px] px-4 sm:px-5 py-3 sm:py-4 text-[15px] sm:text-[16px] text-[#000000] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 focus:border-[#5B8C85] transition-all resize-none"
+              class="w-full bg-[#FFFFFF] border border-[#D9D9D9] rounded-[15px] px-4 sm:px-5 py-3 sm:py-4 text-[15px] sm:text-[16px] text-[#000000] placeholder-[#9CA3AF] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 focus:border-[#5B8C85] focus:shadow-md transition-all resize-none"
               required
             ></textarea>
           </div>
@@ -97,7 +99,7 @@
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="bg-[#5B8C85] hover:bg-[#4a736d] text-[#FFFFFF] text-[18px] sm:text-[22px] font-medium px-8 sm:px-16 py-3.5 sm:py-4 rounded-[24px] sm:rounded-[30px] w-full sm:w-auto sm:min-w-[280px] transition-colors shadow-sm focus:outline-none focus:ring-4 focus:ring-[#5B8C85]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+              class="bg-[#5B8C85] hover:bg-[#4a736d] hover:shadow-md active:scale-[0.98] text-[#FFFFFF] text-[18px] sm:text-[22px] font-medium px-8 sm:px-16 py-3.5 sm:py-4 rounded-[24px] sm:rounded-[30px] w-full sm:w-auto sm:min-w-[280px] transition-all focus:outline-none focus:ring-4 focus:ring-[#5B8C85]/20 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {{ isSubmitting ? "Envoi en cours..." : "Envoyer" }}
             </button>
@@ -113,7 +115,6 @@ import { ref } from "vue";
 import api from "@/services/api";
 import SettingsPageHeader from "@/components/shared/SettingsPageHeader.vue";
 
-// Form state
 const form = ref({
   rating: 0,
   subject: "",

@@ -3,7 +3,7 @@
     <h2 class="text-3xl font-bold text-black mb-4">Salut {{ userName }} !</h2>
 
     <div
-      class="bg-gradient-to-r from-[#d9f2e6] to-[#e6f7ef] rounded-2xl p-4 shadow-sm relative overflow-hidden"
+      class="bg-gradient-to-br from-[#E1EBE8]/50 to-white rounded-2xl p-4 shadow-sm relative overflow-hidden"
     >
       <div class="flex justify-between items-start">
         <h3 class="font-bold text-gray-900 mb-1">Conseil du jour</h3>

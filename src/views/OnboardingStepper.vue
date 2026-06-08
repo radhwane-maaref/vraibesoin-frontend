@@ -33,7 +33,10 @@
         </div>
       </div>
 
-      <div v-if="loadingData" class="px-6 sm:px-8 py-10 text-center text-gray-500">
+      <div
+        v-if="loadingData"
+        class="px-6 sm:px-8 py-10 text-center text-gray-500"
+      >
         Chargement des configurations...
       </div>
 
@@ -71,7 +74,7 @@
               />
               <span
                 class="text-gray-700 font-medium text-sm whitespace-nowrap"
-              >{{ choice.label }}</span
+                >{{ choice.label }}</span
               >
             </label>
           </div>
@@ -81,7 +84,7 @@
               <div class="flex-grow border-t border-gray-200"></div>
               <span
                 class="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-wider"
-              >Ou</span
+                >Ou</span
               >
               <div class="flex-grow border-t border-gray-200"></div>
             </div>
@@ -105,7 +108,7 @@
                 />
                 <span
                   class="text-gray-600 font-medium text-sm whitespace-nowrap"
-                >{{ choice.label }}</span
+                  >{{ choice.label }}</span
                 >
               </label>
             </div>
@@ -116,33 +119,44 @@
           <h2
             class="text-xl md:text-2xl font-bold text-gray-800 mb-1 tracking-tight"
           >
-            Marge budgétaire
+            Profil et préférences
           </h2>
           <p class="text-sm md:text-base text-gray-500 mb-4">
-            Quel est votre budget mensuel alloué aux achats ?
+            Fournissez ces informations pour personnaliser vos analyses et la
+            devise affichée.
           </p>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label
-              v-for="choice in options.budget"
-              :key="choice.value"
-              class="border rounded-lg p-3 cursor-pointer transition-all duration-200 flex items-center"
-              :class="
-                form.budget === choice.value
-                  ? 'border-[#5B8C85] bg-[#5B8C85]/10 ring-1 ring-[#5B8C85]'
-                  : 'border-gray-200 hover:border-[#5B8C85]/50'
-              "
-            >
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Date de naissance</label
+              >
               <input
-                type="radio"
-                :value="choice.value"
-                v-model="form.budget"
-                class="hidden"
+                type="date"
+                v-model="form.birthDate"
+                :max="maxPastDate"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#5B8C85] focus:border-[#5B8C85] outline-none transition-colors"
               />
-              <span class="text-gray-700 font-medium text-sm">{{
-                  choice.label
-                }}</span>
-            </label>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Devise principale</label
+              >
+              <select
+                v-model="form.preferredCurrency"
+                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#5B8C85] focus:border-[#5B8C85] outline-none transition-colors bg-white cursor-pointer"
+              >
+                <option value="" disabled>Sélectionnez une devise</option>
+                <option
+                  v-for="currency in currencyStore.availableCurrencies"
+                  :key="currency.code"
+                  :value="currency.code"
+                >
+                  {{ currency.code }} - {{ currency.name }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -216,67 +230,28 @@
             <p class="mt-2">
               En accédant au site vraibesoin.me et en utilisant les services
               proposés par Vrai Besoin, vous acceptez pleinement et sans réserve
-              les présentes Conditions Générales d'Utilisation. Si vous n'êtes
-              pas en accord avec tout ou partie de ces conditions, il vous est
-              fortement recommandé de ne pas utiliser la plateforme.
+              les présentes Conditions Générales d'Utilisation...
             </p>
-
-            <p class="mt-2">
-              L'accès à certaines fonctionnalités de la plateforme peut
-              nécessiter la création d'un compte utilisateur. Vous vous engagez
-              à fournir des informations exactes, complètes et à jour lors de
-              votre inscription. Vous êtes seul responsable de la
-              confidentialité de vos identifiants de connexion et de toutes les
-              actions effectuées sous votre compte. En cas d'utilisation non
-              autorisée de votre compte, vous devez nous en informer
-              immédiatement.
-            </p>
-
-            <p class="mt-2">
-              L'ensemble des éléments constituant la plateforme Vrai Besoin
-              (textes, graphismes, logiciels, photographies, images, vidéos,
-              sons, plans, noms, logos, marques, créations et œuvres
-              protégeables diverses, bases de données, etc.) ainsi que le site
-              lui-même, relèvent des législations tunisiennes et internationales
-              sur le droit d'auteur et sur les droits voisins du droit d'auteur.
-              Toute reproduction, représentation, diffusion ou rediffusion,
-              totale ou partielle, du contenu de ce site par quelque procédé que
-              ce soit sans l'autorisation expresse de l'éditeur est interdite.
-            </p>
-
-            <p class="mt-2">
-              En utilisant nos services, vous vous engagez à ne pas :
-              <ul class="list-disc pl-5 sm:pl-6 space-y-2 mb-3 marker:text-[#9CA3AF]">
-                <li>Utiliser la plateforme à des fins illégales, frauduleuses ou malveillantes.</li>
-                <li>Perturber le bon fonctionnement du site, des serveurs ou des réseaux connectés.</li>
-                <li>Collecter ou stocker des données personnelles d'autres utilisateurs sans leur consentement.</li>
-                <li>Publier du contenu diffamatoire, obscène, offensant ou violant les droits de tiers.</li>
-              </ul>
-            </p>
-
-            <p class="mt-2">
-              Nous nous réservons le droit de suspendre ou de supprimer votre
-              accès à la plateforme en cas de non-respect de ces règles.
-            </p>
-
-            <p class="mt-2">
-              Les informations et services proposés sur vraibesoin.me sont
-              fournis "en l'état". Bien que nous nous efforcions de maintenir la
-              plateforme accessible et à jour, nous ne pouvons garantir
-              l'absence d'erreurs, de bugs ou d'interruptions de service. Notre
-              responsabilité ne saurait être engagée en cas de dommages directs
-              ou indirects résultant de l'utilisation ou de l'impossibilité
-              d'utiliser la plateforme, y compris en cas de perte de données.
-            </p>
-
-            <p class="mt-2">
-              Nous nous réservons le droit de modifier, à tout moment et sans
-              préavis, les présentes Conditions d'Utilisation afin de les
-              adapter aux évolutions du site ou de la législation. La nouvelle
-              version des CGU sera publiée sur cette page. Il est de votre
-              responsabilité de consulter régulièrement ces conditions pour vous
-              tenir informé des éventuelles modifications.
-            </p>
+            <ul
+              class="list-disc pl-5 sm:pl-6 space-y-2 mb-3 mt-2 marker:text-[#9CA3AF]"
+            >
+              <li>
+                Utiliser la plateforme à des fins illégales, frauduleuses ou
+                malveillantes.
+              </li>
+              <li>
+                Perturber le bon fonctionnement du site, des serveurs ou des
+                réseaux connectés.
+              </li>
+              <li>
+                Collecter ou stocker des données personnelles d'autres
+                utilisateurs sans leur consentement.
+              </li>
+              <li>
+                Publier du contenu diffamatoire, obscène, offensant ou violant
+                les droits de tiers.
+              </li>
+            </ul>
           </div>
 
           <label class="flex items-center space-x-3 cursor-pointer">
@@ -286,7 +261,7 @@
               class="w-5 h-5 text-[#5B8C85] border-gray-300 rounded focus:ring-[#5B8C85]"
             />
             <span class="text-gray-700 font-medium text-sm"
-            >J'accepte les conditions d'utilisation</span
+              >J'accepte les conditions d'utilisation</span
             >
           </label>
 
@@ -357,15 +332,23 @@
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useCurrencyStore } from "@/stores/currency";
 import api from "@/services/api";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const currencyStore = useCurrencyStore();
 
 const currentStep = ref(1);
 const loadingData = ref(true);
 const submitting = ref(false);
 const submitError = ref("");
+
+// Restrict date picker to past dates only
+const maxPastDate = computed(() => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+});
 
 // Predefined Options
 const predefinedGoals = [
@@ -378,13 +361,13 @@ const predefinedGoals = [
 
 const options = reactive({
   socioPro: [],
-  budget: [],
 });
 
 // Form State
 const form = reactive({
   socioPro: [],
-  budget: null,
+  birthDate: null,
+  preferredCurrency: "TND", // Initialized locally (defaults cleanly to base user demographic)
   goals: [],
   acceptedTerms: false,
 });
@@ -415,10 +398,8 @@ watch(
     if (added) {
       const option = options.socioPro.find((o) => o.value === added);
       if (option && isSpecial(option.label)) {
-        // Clear everything else if special option is checked
         form.socioPro = [added];
       } else {
-        // Clear any special options if a regular one is checked
         form.socioPro = newVal.filter((v) => {
           const opt = options.socioPro.find((o) => o.value === v);
           return opt && !isSpecial(opt.label);
@@ -434,7 +415,6 @@ onMounted(async () => {
   try {
     const { data } = await api.get("/onboarding/choices/");
     options.socioPro = data.socio_pro;
-    options.budget = data.budget;
   } catch (err) {
     console.error("Erreur de chargement des configurations:", err);
   } finally {
@@ -446,7 +426,7 @@ onMounted(async () => {
 const isCurrentStepValid = computed(() => {
   if (currentStep.value === 1)
     return form.socioPro.length >= 1 && form.socioPro.length <= 3;
-  if (currentStep.value === 2) return form.budget !== null;
+  if (currentStep.value === 2) return form.birthDate && form.preferredCurrency;
   if (currentStep.value === 3)
     return form.goals.length >= 1 && form.goals.length <= 3;
   if (currentStep.value === 4) return form.acceptedTerms === true;
@@ -466,11 +446,9 @@ const addCustomGoal = () => {
   const g = customGoalInput.value.trim();
   if (!g) return;
 
-  // Case-insensitive duplicate check
   const exists = form.goals.some(
     (existing) => existing.toLowerCase() === g.toLowerCase(),
   );
-
   if (!exists && form.goals.length < 3) {
     form.goals.push(g);
   }
@@ -488,19 +466,23 @@ const submit = async () => {
 
   const payload = {
     socio_professional_categories: form.socioPro,
-    monthly_budget: form.budget,
+    birth_date: form.birthDate,
+    preferred_currency: form.preferredCurrency,
     financial_goals: form.goals,
   };
 
   try {
-    // 1. Envoi des données au backend
     await api.post("/onboarding/submit/", payload);
 
-    // 2. On force la mise à jour du profil depuis la base de données
-    // Cela garantit que is_onboarded est bien True coté serveur
-    await authStore.fetchUserProfile();
+    // Setup currency store directly off user input to optimize local cache prior to routing
+    const selectedCurrencyObj = currencyStore.availableCurrencies.find(
+      (c) => c.code === form.preferredCurrency,
+    );
+    if (selectedCurrencyObj) {
+      await currencyStore.setCurrency(selectedCurrencyObj);
+    }
 
-    // 3. Redirection
+    await authStore.fetchUserProfile();
     router.push({ name: "dashboard" });
   } catch (err) {
     submitError.value =

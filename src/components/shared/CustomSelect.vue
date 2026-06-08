@@ -65,12 +65,19 @@
           v-for="(option, index) in normalizedOptions"
           :key="index"
           @click="selectOption(option)"
-          class="px-5 py-3 cursor-pointer transition-colors text-sm font-medium"
-          :class="
-            isSelected(option)
+          :aria-disabled="option.disabled"
+          class="px-5 py-3 transition-colors text-sm font-medium"
+          :class="[
+            option.disabled
+              ? 'opacity-50 cursor-not-allowed bg-gray-50 text-gray-400'
+              : 'cursor-pointer',
+            !option.disabled && isSelected(option)
               ? 'bg-[#E1EBE8] text-[#5A877E]'
-              : 'text-gray-700 hover:bg-gray-50'
-          "
+              : '',
+            !option.disabled && !isSelected(option)
+              ? 'text-gray-700 hover:bg-gray-50'
+              : '',
+          ]"
         >
           {{ option.label }}
         </li>
@@ -118,7 +125,6 @@ const props = defineProps({
     type: String,
     default: "rounded-3xl",
   },
-  // NOUVELLE PROP : 'auto' par défaut, mais peut être forcée sur 'top' ou 'bottom'
   placement: {
     type: String,
     default: "auto",
@@ -129,14 +135,15 @@ const emit = defineEmits(["update:modelValue", "change"]);
 
 const isOpen = ref(false);
 const dropdownRef = ref(null);
-const openDirection = ref("bottom"); // Va stocker la direction finale (top ou bottom)
+const openDirection = ref("bottom");
 
 const normalizedOptions = computed(() => {
   return props.options.map((opt) => {
     if (typeof opt === "object" && opt !== null) {
-      return { value: opt.value, label: opt.label };
+      // Map disabled properly
+      return { value: opt.value, label: opt.label, disabled: !!opt.disabled };
     }
-    return { value: opt, label: opt };
+    return { value: opt, label: opt, disabled: false };
   });
 });
 
@@ -152,17 +159,14 @@ const isSelected = (option) => option.value === props.modelValue;
 const toggleDropdown = () => {
   if (props.disabled) return;
 
-  // Calcul dynamique de l'espace si le menu n'est pas encore ouvert
   if (!isOpen.value) {
     if (props.placement === "auto" && dropdownRef.value) {
       const rect = dropdownRef.value.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      // La hauteur max de notre dropdown est d'environ 240px (max-h-60) + les marges
       const estimatedDropdownHeight = 250;
 
-      // S'il n'y a pas assez d'espace en bas, MAIS qu'il y en a en haut, on ouvre vers le haut
       if (spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow) {
         openDirection.value = "top";
       } else {
@@ -177,12 +181,12 @@ const toggleDropdown = () => {
 };
 
 const selectOption = (option) => {
+  if (option.disabled) return; // Block disabled clicks
   emit("update:modelValue", option.value);
   emit("change", option.value);
   isOpen.value = false;
 };
 
-// Close dropdown when clicking outside
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isOpen.value = false;

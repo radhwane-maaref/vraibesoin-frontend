@@ -157,18 +157,20 @@ const router = createRouter({
 });
 
 // Global Navigation Guard for Authentication
-router.beforeEach(async (to, from) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some((record) => record.meta.requiresAdmin);
 
+  // If authenticated but no user state exists (e.g. cache was cleared or first load),
+  // we trigger the fetch asynchronously but DO NOT await it.
+  // We rely on the initial route checks, and if roles are strictly required,
+  // we might need a dedicated loading state, but for now we proceed.
   if (authStore.isAuthenticated && !authStore.user) {
-    try {
-      await authStore.fetchUserProfile();
-    } catch (e) {
+    authStore.fetchUserProfile().catch(() => {
       authStore.logout();
-      return { name: "login" };
-    }
+      router.push({ name: "login" });
+    });
   }
 
   // Redirect to log in if the route requires authentication but the user is not logged in

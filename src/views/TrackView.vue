@@ -45,12 +45,39 @@
           <div
             v-for="item in visibleActiveItems"
             :key="item.id"
-            class="bg-[#FFFFFF] rounded-[20px] p-5 shadow-sm"
+            class="premium-card"
           >
             <div class="flex justify-between items-center mb-1">
-              <h3 class="text-base font-bold text-[#000000]">
-                {{ item.name }}
-              </h3>
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-[#000000]">
+                  {{ item.name }}
+                </h3>
+                <button
+                  @click="openVerdictModal(item)"
+                  class="text-[#999999] hover:text-[#5B8C85] transition-colors"
+                  title="Voir l'avis de l'IA"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </button>
+              </div>
               <span class="text-[15px] font-bold text-[#5B8C85]"
                 >{{ item.price }} {{ currencyStore.currentCurrency.code }}</span
               >
@@ -71,7 +98,7 @@
                 }}
               </span>
               <div
-                class="w-full sm:w-1/2 h-2.5 bg-[#E5E7EB] rounded-full mt-1 overflow-hidden"
+                class="w-full sm:w-1/2 h-2.5 bg-[#E5E7EB] rounded-full mt-1 overflow-hidden shadow-inner"
               >
                 <div
                   class="h-full bg-[#DE9D9B] rounded-full transition-all duration-1000 ease-linear"
@@ -82,28 +109,29 @@
             <div class="flex gap-3 sm:gap-4">
               <button
                 @click="updateDecision(item.id, 'ABANDON')"
-                class="flex-1 bg-[#5B8C85] text-[#FFFFFF] py-3 sm:py-2.5 rounded-[12px] font-medium transition-opacity hover:opacity-90"
+                class="flex-1 bg-[#5B8C85] text-[#FFFFFF] py-3 sm:py-2.5 rounded-[12px] font-medium transition-all hover:shadow-md hover:opacity-90 active:scale-[0.98]"
               >
                 Abandonné
               </button>
               <button
                 @click="updateDecision(item.id, 'BUY')"
-                class="flex-1 bg-[#F95E5A] text-[#FFFFFF] py-3 sm:py-2.5 rounded-[12px] font-medium transition-opacity hover:opacity-90"
+                class="flex-1 bg-[#F95E5A] text-[#FFFFFF] py-3 sm:py-2.5 rounded-[12px] font-medium transition-all hover:shadow-md hover:opacity-90 active:scale-[0.98]"
               >
                 Acheté
               </button>
             </div>
           </div>
         </div>
+
         <div
           v-else
-          class="text-center bg-white rounded-[20px] p-8 shadow-sm flex flex-col items-center justify-center"
+          class="premium-card text-center flex flex-col items-center justify-center group"
         >
           <div
-            class="w-16 h-16 bg-[#F8F6F2] rounded-full flex items-center justify-center mb-4"
+            class="w-16 h-16 bg-gradient-to-tr from-[#F8F6F2] to-[#E5E7EB] shadow-inner rounded-full flex items-center justify-center mb-4 transition-transform duration-500 group-hover:scale-105"
           >
             <svg
-              class="w-8 h-8 text-[#9CA3AF]"
+              class="w-8 h-8 text-[#9CA3AF] transition-colors duration-300 group-hover:text-[#5B8C85]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -120,15 +148,18 @@
             Aucune analyse en cours de réflexion.
           </p>
         </div>
+
         <button
           v-if="activeItems.length > 3"
           @click="showAllActive = !showAllActive"
-          class="w-full mt-6 flex items-center justify-center gap-2 text-[#5B8C85] font-bold text-[17px] hover:text-[#4a736d] transition-colors"
+          class="w-full mt-6 flex items-center justify-center gap-2 text-[#5B8C85] font-bold text-[17px] hover:text-[#4a736d] transition-colors group"
         >
           {{ showAllActive ? "Voir moins" : "Voir plus" }}
           <svg
-            class="w-5 h-5 transition-transform"
-            :class="{ 'rotate-180': showAllActive }"
+            class="w-5 h-5 transition-transform duration-300 group-hover:translate-y-0.5"
+            :class="{
+              'rotate-180 group-hover:-translate-y-0.5': showAllActive,
+            }"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -144,10 +175,10 @@
       <section v-if="activeTab === 'historique'" class="animate-fade-in">
         <div class="flex gap-3 mb-6 relative">
           <div
-            class="flex-1 flex items-center bg-[#FFFFFF] rounded-[16px] px-4 py-3.5 shadow-sm"
+            class="flex-1 flex items-center bg-[#FFFFFF] rounded-[16px] px-4 py-3.5 shadow-sm focus-within:shadow-md transition-shadow group"
           >
             <svg
-              class="w-6 h-6 text-[#999999] mr-3"
+              class="w-6 h-6 text-[#999999] mr-3 transition-colors duration-300 group-focus-within:text-[#5B8C85]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -163,16 +194,16 @@
               type="text"
               v-model="searchQuery"
               placeholder="Rechercher un produit..."
-              class="w-full bg-transparent text-[#000000] placeholder-[#D9D9D9] focus:outline-none"
+              class="w-full bg-transparent text-[#000000] placeholder-[#D9D9D9] focus:outline-none font-medium"
             />
           </div>
 
           <button
             @click="showFilters = !showFilters"
-            class="bg-[#FFFFFF] w-14 rounded-[16px] flex items-center justify-center shadow-sm text-[#999999] hover:text-[#000000] transition-colors"
+            class="bg-[#FFFFFF] w-14 rounded-[16px] flex items-center justify-center shadow-sm text-[#999999] hover:text-[#5B8C85] hover:shadow-md transition-all duration-300 group"
           >
             <svg
-              class="w-6 h-6"
+              class="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -188,11 +219,11 @@
 
           <button
             @click="showClearHistoryModal = true"
-            class="bg-[#FFFFFF] w-14 rounded-[16px] flex items-center justify-center shadow-sm text-[#D16D6A] hover:text-[#EF4444] hover:bg-[#FEE2E2] transition-colors"
+            class="bg-[#FFFFFF] w-14 rounded-[16px] flex items-center justify-center shadow-sm text-[#D16D6A] hover:text-[#EF4444] hover:bg-[#FEE2E2] hover:shadow-md transition-all duration-300 group"
             title="Effacer l'historique"
           >
             <svg
-              class="w-8 h-8 text-red-500"
+              class="w-7 h-7 text-red-500 transition-transform duration-300 group-hover:rotate-12"
               viewBox="0 0 24 24"
               fill="currentColor"
               xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +236,7 @@
 
           <div
             v-if="showFilters"
-            class="absolute top-[60px] right-0 bg-[#FFFFFF] shadow-lg rounded-[16px] p-5 w-72 z-20 border border-[#D9D9D9]/30"
+            class="absolute top-[60px] right-0 premium-card w-72 z-20 animate-fade-in"
           >
             <h4 class="font-bold text-[#000000] mb-2 text-[14px]">
               Filtrer par statut
@@ -218,7 +249,7 @@
                 roundedClass="rounded-[8px]"
               />
             </div>
-            <hr class="border-[#D9D9D9] mb-4" />
+            <hr class="border-[#D9D9D9]/50 mb-4" />
             <h4 class="font-bold text-[#000000] mb-2 text-[14px]">Catégorie</h4>
             <div class="mb-4">
               <CustomSelect
@@ -228,7 +259,7 @@
                 roundedClass="rounded-[8px]"
               />
             </div>
-            <hr class="border-[#D9D9D9] mb-4" />
+            <hr class="border-[#D9D9D9]/50 mb-4" />
             <h4 class="font-bold text-[#000000] mb-2 text-[14px]">Trier par</h4>
             <CustomSelect
               v-model="sortBy"
@@ -243,7 +274,7 @@
           <div
             v-for="item in paginatedHistory"
             :key="item.id"
-            class="bg-[#FFFFFF] rounded-[16px] p-4 flex items-center justify-between shadow-sm"
+            class="premium-card flex items-center justify-between group transition-transform hover:-translate-y-0.5"
           >
             <div class="pr-3">
               <h3
@@ -255,31 +286,60 @@
                 class="text-[13px] text-[#6B7280] mt-1 flex items-center flex-wrap gap-1"
               >
                 <span>{{ item.date }}</span>
-                <span class="text-[10px]">Title</span>
-                <span>{{ item.category }}</span
-                >•
+                <span class="text-[10px] opacity-60">|</span>
+                <span>{{ item.category }}</span>
+                <span class="text-[10px] opacity-60">•</span>
                 <span class="font-bold text-[#5B8C85]"
                   >{{ item.price }}
                   {{ currencyStore.currentCurrency.code }}</span
                 >
               </p>
             </div>
-            <span
-              class="w-24 sm:w-28 flex-shrink-0 text-center py-1.5 rounded-full text-[#FFFFFF] text-[12px] sm:text-[13px] font-medium"
-              :class="
-                item.status === 'Abandonné' ? 'bg-[#5B8C85]' : 'bg-[#F95E5A]'
-              "
-            >
-              {{ item.status }}
-            </span>
+            <div class="flex items-center gap-3">
+              <button
+                @click.stop="openVerdictModal(item)"
+                class="text-[#9CA3AF] hover:text-[#5B8C85] transition-colors p-1"
+                title="Voir l'avis de l'IA"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+              </button>
+              <span
+                class="w-24 sm:w-28 flex-shrink-0 text-center py-1.5 rounded-full text-[#FFFFFF] text-[12px] sm:text-[13px] font-medium shadow-sm transition-opacity group-hover:opacity-90"
+                :class="
+                  item.status === 'Abandonné' ? 'bg-[#5B8C85]' : 'bg-[#F95E5A]'
+                "
+              >
+                {{ item.status }}
+              </span>
+            </div>
           </div>
         </div>
+
         <div
           v-if="paginatedHistory.length === 0"
-          class="text-center text-[#999999] py-8"
+          class="text-center text-[#999999] py-8 font-medium"
         >
           Aucun résultat trouvé pour ces filtres.
         </div>
+
         <button
           v-if="hasMoreHistory"
           @click="loadMoreHistory"
@@ -295,13 +355,13 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
     >
       <div
-        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+        class="premium-card w-full max-w-sm text-center transform transition-all"
       >
         <div
-          class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 shadow-inner rounded-full flex items-center justify-center mx-auto mb-5"
         >
           <svg
-            class="w-8 h-8 text-red-500"
+            class="w-8 h-8 text-red-500 drop-shadow-sm"
             viewBox="0 0 24 24"
             fill="currentColor"
             xmlns="http://www.w3.org/2000/svg"
@@ -321,14 +381,14 @@
         <div class="flex gap-3">
           <button
             @click="showClearHistoryModal = false"
-            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors active:scale-[0.98]"
           >
             Annuler
           </button>
           <button
             @click="confirmClearHistory"
             :disabled="isClearingHistory"
-            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors disabled:opacity-50"
+            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors active:scale-[0.98] disabled:opacity-50"
           >
             {{ isClearingHistory ? "Effacement..." : "Oui, effacer" }}
           </button>
@@ -341,19 +401,19 @@
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
     >
       <div
-        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+        class="premium-card w-full max-w-sm text-center transform transition-all"
       >
         <div
-          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner"
           :class="
             notificationType === 'success'
-              ? 'bg-green-50 text-green-500'
-              : 'bg-red-50 text-red-500'
+              ? 'bg-gradient-to-br from-green-50 to-green-100 text-green-500'
+              : 'bg-gradient-to-br from-red-50 to-red-100 text-red-500'
           "
         >
           <svg
             v-if="notificationType === 'success'"
-            class="w-8 h-8"
+            class="w-8 h-8 drop-shadow-sm"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -367,7 +427,7 @@
           </svg>
           <svg
             v-else
-            class="w-8 h-8"
+            class="w-8 h-8 drop-shadow-sm"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -388,7 +448,7 @@
         </p>
         <button
           @click="showNotificationModal = false"
-          class="w-full py-3.5 rounded-xl font-bold text-white transition-colors"
+          class="w-full py-3.5 rounded-xl font-bold text-white transition-all hover:shadow-md active:scale-[0.98]"
           :class="
             notificationType === 'success'
               ? 'bg-[#5B8C85] hover:bg-[#4a736d]'
@@ -397,6 +457,82 @@
         >
           Fermer
         </button>
+      </div>
+    </div>
+
+    <!-- Verdict Modal -->
+    <div
+      v-if="showVerdictModal && selectedItemVerdict"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
+      @click.self="showVerdictModal = false"
+    >
+      <div
+        class="premium-card w-full max-w-md transform transition-all flex flex-col max-h-[80vh]"
+      >
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="font-bold text-xl text-gray-900">
+              {{ selectedItemVerdict.name }}
+            </h3>
+            <p
+              class="text-sm font-medium"
+              :class="
+                selectedItemVerdict.aiVerdict === 'BUY'
+                  ? 'text-[#F95E5A]'
+                  : selectedItemVerdict.aiVerdict === 'CALM'
+                    ? 'text-[#F59E0B]'
+                    : 'text-[#5B8C85]'
+              "
+            >
+              Verdict initial :
+              {{
+                selectedItemVerdict.aiVerdict === "BUY"
+                  ? "Acheter "
+                  : selectedItemVerdict.aiVerdict === "CALM"
+                    ? "Attendre"
+                    : "Abandonner"
+              }}
+            </p>
+          </div>
+          <button
+            @click="showVerdictModal = false"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+          <div
+            class="bg-[#F8F6F2] rounded-xl p-4 text-gray-700 text-[15px] leading-relaxed whitespace-pre-line border border-[#E5E7EB]"
+          >
+            {{
+              selectedItemVerdict.aiReasoning ||
+              "Aucun argumentaire enregistré pour cet achat."
+            }}
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+          <button
+            @click="showVerdictModal = false"
+            class="px-6 py-2.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors active:scale-[0.98]"
+          >
+            Fermer
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -412,10 +548,8 @@ import CustomSelect from "@/components/shared/CustomSelect.vue";
 const currencyStore = useCurrencyStore();
 const authStore = useAuthStore();
 
-// Gestion des onglets
 const activeTab = ref("reflexion");
 
-// Options
 const statusOptions = [
   { value: "all", label: "Tous les statuts" },
   { value: "Acheté", label: "Acheté" },
@@ -431,7 +565,6 @@ const sortOptions = [
 
 const categoryOptions = ref([{ value: "all", label: "Toutes catégories" }]);
 
-// Variables modales
 const showClearHistoryModal = ref(false);
 const isClearingHistory = ref(false);
 const showNotificationModal = ref(false);
@@ -485,6 +618,8 @@ const fetchActiveIntentions = async () => {
       updatedAt: item.updated_at,
       timeLeft: "Calcul...",
       progress: 100,
+      aiVerdict: item.ai_verdict,
+      aiReasoning: item.ai_reasoning,
     }));
     calculateProgress();
   } catch (error) {
@@ -504,9 +639,6 @@ const updateDecision = async (id, decisionCode) => {
   }
 };
 
-// ==========================================
-// SECTION EFFACEMENT HISTORIQUE
-// ==========================================
 const confirmClearHistory = async () => {
   isClearingHistory.value = true;
   try {
@@ -517,9 +649,7 @@ const confirmClearHistory = async () => {
       "Votre historique a été effacé avec succès. Vous repartez à zéro !";
     showNotificationModal.value = true;
 
-    // Rafraîchir les données de la vue courante
     fetchHistory(true);
-    // Rafraîchir les statistiques utilisateur au niveau global
     await authStore.fetchUserProfile();
   } catch (err) {
     console.error("Erreur lors de l'effacement de l'historique :", err);
@@ -543,7 +673,12 @@ const sortBy = ref("date");
 const historyItems = ref([]);
 const currentPage = ref(1);
 const hasMoreHistory = ref(false);
-
+const showVerdictModal = ref(false);
+const selectedItemVerdict = ref(null);
+const openVerdictModal = (item) => {
+  selectedItemVerdict.value = item;
+  showVerdictModal.value = true;
+};
 const mapStatusToLabel = (dbStatus) => {
   const map = { BUY: "Acheté", ABANDON: "Abandonné" };
   return map[dbStatus] || "Inconnu";
@@ -580,6 +715,8 @@ const fetchHistory = async (reset = false) => {
       category: item.product_category,
       price: parseFloat(item.product_price),
       status: mapStatusToLabel(item.user_final_decision),
+      aiVerdict: item.ai_verdict,
+      aiReasoning: item.ai_reasoning,
     }));
 
     if (reset) historyItems.value = formattedResults;

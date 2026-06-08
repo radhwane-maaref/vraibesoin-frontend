@@ -5,14 +5,12 @@
     <div class="w-full max-w-3xl px-4 sm:px-6 md:px-8 py-6 sm:py-8 lg:py-10">
       <SettingsPageHeader title="Mes préférences" />
 
-      <section
-        class="bg-[#FFFFFF] rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 mb-6 sm:mb-8 shadow-sm"
-      >
-        <div class="flex items-center gap-3">
+      <section class="premium-card mb-6 sm:mb-8">
+        <div class="flex items-center gap-3 group">
           <img
             src="../../assets/Sport%20Stopwatch.png"
             alt="Timer Icon"
-            class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+            class="w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3"
           />
           <h2 class="text-xl sm:text-2xl font-bold text-[#000000]">
             Période de réflexion
@@ -30,7 +28,7 @@
             max="3"
             step="1"
             v-model="periodIndex"
-            class="custom-slider w-full"
+            class="custom-slider w-full transition-all"
           />
           <div class="flex justify-between mt-4 px-1">
             <span
@@ -41,7 +39,7 @@
               :class="
                 periodIndex == index
                   ? 'text-[#5B8C85] font-bold'
-                  : 'text-[#9CA3AF] font-normal'
+                  : 'text-[#9CA3AF] font-normal hover:text-[#5B8C85]'
               "
             >
               {{ label }}
@@ -55,9 +53,7 @@
       >
         Configuration
       </h2>
-      <section
-        class="bg-[#FFFFFF] rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 mb-6 sm:mb-8 shadow-sm"
-      >
+      <section class="premium-card mb-6 sm:mb-8">
         <div class="mb-6 sm:mb-8 relative z-50">
           <h3 class="text-lg sm:text-xl font-bold text-[#000000] mb-2 sm:mb-3">
             Devise
@@ -65,22 +61,23 @@
           <div class="relative w-full">
             <button
               @click="isDropdownOpen = !isDropdownOpen"
-              class="w-full flex items-center justify-between border border-[#D9D9D9] bg-[#FFFFFF] rounded-[12px] sm:rounded-[15px] px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 transition-all"
+              class="w-full flex items-center justify-between border border-[#D9D9D9] bg-[#FFFFFF] rounded-[12px] sm:rounded-[15px] px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30 hover:shadow-sm transition-all group"
             >
               <div class="flex items-center gap-2 sm:gap-3">
                 <img
                   :src="`https://flagcdn.com/w40/${selectedCurrency.countryCode}.png`"
                   :alt="selectedCurrency.code"
-                  class="w-6 sm:w-7 object-cover rounded-[2px] shadow-sm"
+                  class="w-6 sm:w-7 object-cover rounded-[2px] shadow-sm transition-transform duration-300 group-hover:scale-105"
                 />
                 <span
-                  class="text-[15px] sm:text-base text-[#9CA3AF] font-medium"
-                  >{{ selectedCurrency.code }}</span
+                  class="text-[15px] sm:text-base text-[#9CA3AF] font-medium group-hover:text-gray-700 transition-colors"
                 >
+                  {{ selectedCurrency.code }}
+                </span>
               </div>
               <svg
-                class="w-4 h-4 sm:w-5 sm:h-5 text-[#9CA3AF] transition-transform duration-300"
-                :class="{ 'rotate-180': isDropdownOpen }"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-[#9CA3AF] transition-all duration-300 group-hover:text-[#5B8C85]"
+                :class="{ 'rotate-180 text-[#5B8C85]': isDropdownOpen }"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -111,7 +108,8 @@
                   @click="selectCurrency(currency)"
                   class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 cursor-pointer hover:bg-[#F8F6F2] transition-colors"
                   :class="{
-                    'bg-[#F8F6F2]': selectedCurrency.code === currency.code,
+                    'bg-[#F8F6F2] font-bold':
+                      selectedCurrency.code === currency.code,
                   }"
                 >
                   <img
@@ -121,8 +119,9 @@
                   />
                   <span
                     class="text-[14px] sm:text-[15px] text-[#6B7280] font-medium"
-                    >{{ currency.code }} - {{ currency.name }}</span
                   >
+                    {{ currency.code }} - {{ currency.name }}
+                  </span>
                 </li>
               </ul>
             </transition>
@@ -134,7 +133,7 @@
             Niveau de rigueur d'évaluation
           </h3>
           <div
-            class="bg-[#E5E7EB] rounded-[12px] sm:rounded-[15px] p-1 sm:p-1.5 flex w-full relative"
+            class="bg-[#E5E7EB]/70 shadow-inner rounded-[12px] sm:rounded-[15px] p-1 sm:p-1.5 flex w-full relative"
           >
             <button
               v-for="(level, index) in rigueurLevels"
@@ -143,8 +142,8 @@
               class="flex-1 py-2 sm:py-2.5 px-1 sm:px-0 text-center text-[13px] sm:text-[15px] transition-all duration-300 z-10 rounded-[10px] sm:rounded-[12px] whitespace-nowrap"
               :class="
                 selectedRigueur === level
-                  ? 'text-[#5B8C85] font-bold shadow-sm bg-[#FFFFFF]'
-                  : 'text-[#9CA3AF] font-medium hover:text-[#6B7280]'
+                  ? 'text-[#5B8C85] font-bold shadow-md bg-[#FFFFFF] scale-[1.02]'
+                  : 'text-[#9CA3AF] font-medium hover:text-[#6B7280] hover:bg-white/40'
               "
             >
               {{ level }}
@@ -158,16 +157,14 @@
       >
         Notifications
       </h2>
-      <section
-        class="bg-[#FFFFFF] rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 mb-6 sm:mb-8 shadow-sm"
-      >
-        <div class="flex items-center justify-between gap-3 sm:gap-4">
+      <section class="premium-card mb-6 sm:mb-8">
+        <div class="flex items-center justify-between gap-3 sm:gap-4 group">
           <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
             <div
-              class="w-10 sm:w-12 flex-shrink-0 flex justify-center items-center text-[#5B8C85]"
+              class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex justify-center items-center text-[#5B8C85] bg-gradient-to-br from-[#F8F6F2] to-[#E5E7EB] shadow-inner rounded-full transition-transform duration-300 group-hover:scale-105"
             >
               <svg
-                class="w-7 h-7 sm:w-8 sm:h-8"
+                class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-sm transition-transform duration-300 group-hover:rotate-12"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +182,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <h3
-                class="text-[15px] sm:text-[17px] font-bold text-[#000000] leading-tight sm:leading-normal"
+                class="text-[15px] sm:text-[17px] font-bold text-[#000000] leading-tight sm:leading-normal transition-colors group-hover:text-[#5B8C85]"
               >
                 Alerte de fin de période
               </h3>
@@ -200,7 +197,7 @@
           </div>
           <button
             @click="notificationsEnabled = !notificationsEnabled"
-            class="relative inline-flex h-[28px] w-[50px] sm:h-[32px] sm:w-[56px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B8C85] focus-visible:ring-opacity-75"
+            class="relative inline-flex h-[28px] w-[50px] sm:h-[32px] sm:w-[56px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B8C85] focus-visible:ring-opacity-75"
             :class="notificationsEnabled ? 'bg-[#5B8C85]' : 'bg-[#E5E7EB]'"
             role="switch"
             :aria-checked="notificationsEnabled.toString()"
@@ -208,7 +205,7 @@
             <span class="sr-only">Activer les notifications</span>
             <span
               aria-hidden="true"
-              class="pointer-events-none inline-block h-[20px] w-[20px] sm:h-[24px] sm:w-[24px] transform rounded-full bg-[#FFFFFF] shadow-md ring-0 transition duration-200 ease-in-out"
+              class="pointer-events-none inline-block h-[20px] w-[20px] sm:h-[24px] sm:w-[24px] transform rounded-full bg-[#FFFFFF] shadow-md ring-0 transition-transform duration-200 ease-in-out"
               :class="
                 notificationsEnabled
                   ? 'translate-x-[22px] sm:translate-x-[24px]'
@@ -345,6 +342,7 @@ watch(selectedRigueur, async (newVal) => {
   cursor: pointer;
   background: #e5e7eb;
   border-radius: 9999px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .custom-slider::-moz-range-track {
   width: 100%;
@@ -352,6 +350,7 @@ watch(selectedRigueur, async (newVal) => {
   cursor: pointer;
   background: #e5e7eb;
   border-radius: 9999px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .custom-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -364,6 +363,10 @@ watch(selectedRigueur, async (newVal) => {
   margin-top: -7px;
   border: 4px solid #ffffff;
   box-shadow: 0 0 12px 2px rgba(199, 210, 254, 0.6);
+  transition: transform 0.2s;
+}
+.custom-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 .custom-slider::-moz-range-thumb {
   height: 26px;
@@ -373,5 +376,9 @@ watch(selectedRigueur, async (newVal) => {
   cursor: pointer;
   border: 4px solid #ffffff;
   box-shadow: 0 0 12px 2px rgba(199, 210, 254, 0.6);
+  transition: transform 0.2s;
+}
+.custom-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
 }
 </style>

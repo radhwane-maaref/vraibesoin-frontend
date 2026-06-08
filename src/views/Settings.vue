@@ -1,9 +1,7 @@
 <template>
-  <!-- Main Wrapper -->
   <div
     class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12 px-4"
   >
-    <!-- Header -->
     <header class="w-full pt-4 sm:pt-12 pb-3 sm:pb-6">
       <h1
         class="text-center text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
@@ -12,11 +10,9 @@
       </h1>
     </header>
 
-    <!-- Content -->
     <main
       class="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 flex flex-col gap-8 sm:gap-10"
     >
-      <!-- Section: COMPTE -->
       <section class="flex flex-col gap-2.5 sm:gap-4">
         <h2
           class="text-[13px] sm:text-sm font-bold text-gray-500 uppercase tracking-widest pl-2"
@@ -24,16 +20,14 @@
           Compte
         </h2>
 
-        <div
-          class="bg-white rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100"
-        >
+        <div class="premium-card overflow-hidden !p-0">
           <router-link
             :to="{ name: 'EditProfileView' }"
             class="w-full flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 hover:bg-gray-50 transition-colors group"
           >
             <div class="flex items-center gap-4 sm:gap-5">
               <svg
-                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] transition-colors"
+                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] group-hover:scale-110 drop-shadow-sm transition-all duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
@@ -47,11 +41,12 @@
               </svg>
               <span
                 class="text-[15px] sm:text-lg font-medium text-gray-800 group-hover:text-gray-900"
-                >Modifier mon profil</span
               >
+                Modifier mon profil
+              </span>
             </div>
             <svg
-              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke-width="2"
@@ -67,7 +62,6 @@
         </div>
       </section>
 
-      <!-- Section: PRÉFÉRENCES -->
       <section class="flex flex-col gap-2.5 sm:gap-4">
         <h2
           class="text-[13px] sm:text-sm font-bold text-gray-500 uppercase tracking-widest pl-2"
@@ -75,16 +69,14 @@
           Préférences
         </h2>
 
-        <div
-          class="bg-white rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100"
-        >
+        <div class="premium-card overflow-hidden !p-0">
           <router-link
             :to="{ name: 'UserPreferencesView' }"
             class="w-full flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 hover:bg-gray-50 transition-colors group"
           >
             <div class="flex items-center gap-4 sm:gap-5">
               <svg
-                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] transition-colors"
+                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] group-hover:scale-110 drop-shadow-sm transition-all duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
@@ -98,11 +90,12 @@
               </svg>
               <span
                 class="text-[15px] sm:text-lg font-medium text-gray-800 group-hover:text-gray-900"
-                >Modifier mes préférences</span
               >
+                Modifier mes préférences
+              </span>
             </div>
             <svg
-              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke-width="2"
@@ -118,7 +111,6 @@
         </div>
       </section>
 
-      <!-- Section: ASSISTANCE -->
       <section class="flex flex-col gap-2.5 sm:gap-4">
         <h2
           class="text-[13px] sm:text-sm font-bold text-gray-500 uppercase tracking-widest pl-2"
@@ -126,16 +118,14 @@
           Assistance
         </h2>
 
-        <div
-          class="bg-white rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100 flex flex-col"
-        >
+        <div class="premium-card overflow-hidden flex flex-col !p-0">
           <router-link
             :to="{ name: 'TermsOfServiceView' }"
             class="w-full flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 hover:bg-gray-50 transition-colors border-b border-gray-100 group"
           >
             <div class="flex items-center gap-4 sm:gap-5">
               <svg
-                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] transition-colors"
+                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] group-hover:scale-110 drop-shadow-sm transition-all duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
@@ -149,11 +139,12 @@
               </svg>
               <span
                 class="text-[15px] sm:text-lg font-medium text-gray-800 group-hover:text-gray-900"
-                >Conditions d'utilisations</span
               >
+                Conditions d'utilisations
+              </span>
             </div>
             <svg
-              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke-width="2"
@@ -173,7 +164,7 @@
           >
             <div class="flex items-center gap-4 sm:gap-5">
               <svg
-                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] transition-colors"
+                class="w-6 h-6 sm:w-7 sm:h-7 text-gray-500 group-hover:text-[#5B8C85] group-hover:scale-110 drop-shadow-sm transition-all duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
@@ -187,11 +178,12 @@
               </svg>
               <span
                 class="text-[15px] sm:text-lg font-medium text-gray-800 group-hover:text-gray-900"
-                >Aide et support</span
               >
+                Aide et support
+              </span>
             </div>
             <svg
-              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300"
+              class="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 transition-transform duration-300 group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke-width="2"
@@ -207,16 +199,15 @@
         </div>
       </section>
 
-      <!-- Section: ACTIONS (Logout & Delete) -->
       <section
         class="mt-4 sm:mt-8 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 pb-8"
       >
         <button
           @click="performLogout"
-          class="w-full sm:w-auto flex items-center justify-center gap-2 text-[#D9534F] font-medium text-[15px] sm:text-base px-8 py-3.5 sm:py-3 bg-white sm:bg-transparent rounded-2xl sm:rounded-full shadow-sm sm:shadow-none border border-red-50 sm:border-transparent hover:bg-red-50 hover:border-red-100 transition-colors active:scale-95"
+          class="w-full sm:w-auto flex items-center justify-center gap-2 text-[#D9534F] font-medium text-[15px] sm:text-base px-8 py-3.5 sm:py-3 bg-white sm:bg-transparent rounded-2xl sm:rounded-full shadow-sm sm:shadow-none border border-red-50 sm:border-transparent hover:bg-red-50 hover:border-red-100 transition-colors active:scale-95 group"
         >
           <svg
-            class="w-5 h-5"
+            class="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width="1.5"
@@ -233,10 +224,10 @@
 
         <button
           @click="showDeleteConfirmModal = true"
-          class="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-500 font-medium text-[15px] sm:text-base px-8 py-3.5 sm:py-3 bg-white sm:bg-transparent rounded-2xl sm:rounded-full shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-colors active:scale-95"
+          class="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-500 font-medium text-[15px] sm:text-base px-8 py-3.5 sm:py-3 bg-white sm:bg-transparent rounded-2xl sm:rounded-full shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-colors active:scale-95 group"
         >
           <svg
-            class="w-5 h-5"
+            class="w-5 h-5 transition-transform duration-300 group-hover:rotate-12"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width="1.5"
@@ -253,19 +244,18 @@
       </section>
     </main>
 
-    <!-- Modale d'Avertissement (Confirmation) -->
     <div
       v-if="showDeleteConfirmModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
     >
       <div
-        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+        class="premium-card w-full max-w-sm text-center transform transition-all"
       >
         <div
-          class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 shadow-inner rounded-full flex items-center justify-center mx-auto mb-5"
         >
           <svg
-            class="w-8 h-8 text-red-500"
+            class="w-8 h-8 text-red-500 drop-shadow-sm"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -288,14 +278,14 @@
         <div class="flex gap-3">
           <button
             @click="showDeleteConfirmModal = false"
-            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+            class="flex-1 py-3.5 rounded-xl bg-gray-100 font-bold text-gray-700 hover:bg-gray-200 transition-colors active:scale-[0.98]"
           >
             Annuler
           </button>
           <button
             @click="executeAccountDeletion"
             :disabled="isDeleting"
-            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors disabled:opacity-50"
+            class="flex-1 py-3.5 rounded-xl bg-[#FEE2E2] font-bold text-[#EF4444] hover:bg-red-200 transition-colors disabled:opacity-50 active:scale-[0.98]"
           >
             {{ isDeleting ? "Suppression..." : "Oui, supprimer" }}
           </button>
@@ -303,19 +293,18 @@
       </div>
     </div>
 
-    <!-- Modale de Succès -->
     <div
       v-if="showDeleteSuccessModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-opacity"
     >
       <div
-        class="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm text-center shadow-2xl border border-gray-100"
+        class="premium-card w-full max-w-sm text-center transform transition-all"
       >
         <div
-          class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 bg-gradient-to-br from-green-50 to-green-100 shadow-inner rounded-full flex items-center justify-center mx-auto mb-5"
         >
           <svg
-            class="w-8 h-8 text-green-500"
+            class="w-8 h-8 text-green-500 drop-shadow-sm"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -335,7 +324,7 @@
         </p>
         <button
           @click="finalizeDeletionAndLogout"
-          class="w-full py-3.5 rounded-xl bg-[#5B8C85] font-bold text-white hover:bg-[#4a736d] transition-colors shadow-sm"
+          class="w-full py-3.5 rounded-xl bg-[#5B8C85] font-bold text-white hover:bg-[#4a736d] transition-colors shadow-sm active:scale-[0.98]"
         >
           Retour à l'accueil
         </button>
