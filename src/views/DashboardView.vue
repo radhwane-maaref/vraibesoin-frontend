@@ -89,9 +89,7 @@
         >
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h3 class="text-lg font-bold text-gray-900">
-                Charges Récurrentes
-              </h3>
+              <h3 class="text-lg font-bold text-gray-900">Mes charges</h3>
               <p class="text-xs text-gray-400 mt-0.5">
                 Vos abonnements, loyers et factures prévus
               </p>
@@ -224,7 +222,10 @@ const fetchDashboardSummary = async (background = false) => {
   try {
     const response = await api.get("/dashboard/summary/");
     dashboardData.value = response.data;
-    localStorage.setItem("dashboard_summary_cache", JSON.stringify(response.data));
+    localStorage.setItem(
+      "dashboard_summary_cache",
+      JSON.stringify(response.data),
+    );
   } catch (error) {
     console.error("Erreur lors du chargement du dashboard :", error);
   } finally {

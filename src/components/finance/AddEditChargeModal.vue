@@ -21,250 +21,235 @@
         leave-to-class="transform opacity-0 scale-95 translate-y-4"
       >
         <div
-          class="premium-card text-[#1F2937] sm:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto font-['DM_Sans',_sans-serif] relative flex flex-col"
+          class="premium-card text-[#1F2937] w-full max-w-lg max-h-[90vh] flex flex-col font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl"
         >
-          <button
-            @click="handleClose"
-            class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          <h2
-            class="text-xl sm:text-2xl font-bold text-gray-900 mb-6 text-center"
-          >
-            {{ isEditMode ? "Modifier la Charge" : "Ajouter une Charge fixe" }}
-          </h2>
+          <div class="p-5 sm:p-8 flex-shrink-0 relative">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 text-center">
+              {{ isEditMode ? "Modifier la Charge" : "Ajouter une charge " }}
+            </h2>
+          </div>
 
           <form
             @submit.prevent="handleSubmit"
-            class="space-y-5 flex-grow flex flex-col"
+            class="flex-grow flex flex-col overflow-hidden"
           >
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                Type de charge
-              </label>
-              <CustomSelect
-                v-model="selectedChargeType"
-                :options="standardCharges"
-                placeholder="Sélectionnez une catégorie"
-                :error="isNameInvalid"
-                @change="touched.name = true"
-              />
-
-              <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="transform opacity-0 -translate-y-2"
-                enter-to-class="transform opacity-100 translate-y-0"
-              >
-                <div
-                  v-if="selectedChargeType === 'Autre'"
-                  class="mt-2 space-y-1"
+            <div class="space-y-5 overflow-y-auto px-5 sm:px-8 pb-4 flex-grow">
+              <div class="space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
                 >
-                  <input
-                    type="text"
-                    v-model="customChargeName"
-                    @blur="touched.name = true"
-                    placeholder="Saisissez le nom de la charge"
-                    maxlength="51"
-                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
-                    :class="
-                      isNameInvalid
-                        ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
-                        : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
-                    "
-                  />
-                </div>
-              </transition>
-              <p
-                v-if="isNameInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                Le nom est obligatoire et ne doit pas dépasser 50 caractères.
-              </p>
-            </div>
-
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                Type de montant
-              </label>
-              <div
-                class="flex gap-3 bg-white p-1.5 border border-gray-200 rounded-3xl shadow-sm"
-              >
-                <button
-                  type="button"
-                  @click="isFixed = true"
-                  class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
-                  :class="
-                    isFixed
-                      ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
-                      : 'text-gray-500 hover:bg-gray-50'
-                  "
-                >
-                  Montant Fixe
-                </button>
-                <button
-                  type="button"
-                  @click="isFixed = false"
-                  class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
-                  :class="
-                    !isFixed
-                      ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
-                      : 'text-gray-500 hover:bg-gray-50'
-                  "
-                >
-                  Montant Variable
-                </button>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                {{ isFixed ? "Montant Exact" : "Estimation du Montant" }}
-              </label>
-
-              <div v-if="isFixed" class="relative">
-                <input
-                  type="number"
-                  v-model="exactAmount"
-                  @blur="touched.amount = true"
-                  step="0.01"
-                  placeholder="0.00"
-                  class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-16"
-                  :class="
-                    isFixedAmountInvalid
-                      ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
-                      : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
-                  "
+                  Type de charge
+                </label>
+                <CustomSelect
+                  v-model="selectedChargeType"
+                  :options="standardCharges"
+                  placeholder="Sélectionnez une catégorie"
+                  :error="isNameInvalid"
+                  @change="touched.name = true"
                 />
-                <div
-                  class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-sm"
+
+                <transition
+                  enter-active-class="transition ease-out duration-200"
+                  enter-from-class="transform opacity-0 -translate-y-2"
+                  enter-to-class="transform opacity-100 translate-y-0"
                 >
-                  {{ currencyStore.currentCurrency.code }}
+                  <div
+                    v-if="selectedChargeType === 'Autre'"
+                    class="mt-2 space-y-1"
+                  >
+                    <input
+                      type="text"
+                      v-model="customChargeName"
+                      @blur="touched.name = true"
+                      placeholder="Saisissez le nom de la charge"
+                      maxlength="51"
+                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
+                      :class="
+                        isNameInvalid
+                          ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
+                          : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
+                      "
+                    />
+                  </div>
+                </transition>
+                <p
+                  v-if="isNameInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  Le nom est obligatoire et ne doit pas dépasser 50 caractères.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  Type de montant
+                </label>
+                <div
+                  class="flex gap-3 bg-white p-1.5 border border-gray-200 rounded-3xl shadow-sm"
+                >
+                  <button
+                    type="button"
+                    @click="isFixed = true"
+                    class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
+                    :class="
+                      isFixed
+                        ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    "
+                  >
+                    Montant Fixe
+                  </button>
+                  <button
+                    type="button"
+                    @click="isFixed = false"
+                    class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
+                    :class="
+                      !isFixed
+                        ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    "
+                  >
+                    Montant Variable
+                  </button>
                 </div>
               </div>
 
-              <div v-else class="grid grid-cols-2 gap-4">
-                <div class="relative">
+              <div class="space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  {{ isFixed ? "Montant Exact" : "Estimation du Montant" }}
+                </label>
+
+                <div v-if="isFixed" class="relative">
                   <input
                     type="number"
-                    v-model="minAmount"
+                    v-model="exactAmount"
                     @blur="touched.amount = true"
                     step="0.01"
-                    placeholder="Min"
-                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                    placeholder="0.00"
+                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-16"
                     :class="
-                      isVariableAmountInvalid
+                      isFixedAmountInvalid
                         ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
                         : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
                     "
                   />
                   <div
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
+                    class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-sm"
                   >
                     {{ currencyStore.currentCurrency.code }}
                   </div>
                 </div>
 
+                <div v-else class="grid grid-cols-2 gap-4">
+                  <div class="relative">
+                    <input
+                      type="number"
+                      v-model="minAmount"
+                      @blur="touched.amount = true"
+                      step="0.01"
+                      placeholder="Min"
+                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                      :class="
+                        isVariableAmountInvalid
+                          ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
+                          : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
+                      "
+                    />
+                    <div
+                      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
+                    >
+                      {{ currencyStore.currentCurrency.code }}
+                    </div>
+                  </div>
+
+                  <div class="relative">
+                    <input
+                      type="number"
+                      v-model="maxAmount"
+                      @blur="touched.amount = true"
+                      step="0.01"
+                      placeholder="Max"
+                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                      :class="
+                        isVariableAmountInvalid
+                          ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
+                          : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
+                      "
+                    />
+                    <div
+                      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
+                    >
+                      {{ currencyStore.currentCurrency.code }}
+                    </div>
+                  </div>
+                </div>
+
+                <p
+                  v-if="isFixedAmountInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  Le montant fixe doit être un nombre positif supérieur à 0.
+                </p>
+                <p
+                  v-if="isVariableAmountInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  Le montant min doit être &ge; 0 et le max doit être
+                  strictement supérieur au min.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  Prochaine Échéance
+                </label>
                 <div class="relative">
                   <input
-                    type="number"
-                    v-model="maxAmount"
-                    @blur="touched.amount = true"
-                    step="0.01"
-                    placeholder="Max"
-                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                    type="date"
+                    v-model="dueDate"
+                    @blur="touched.dueDate = true"
+                    :min="isEditMode ? '' : todayDateStr"
+                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white appearance-none"
                     :class="
-                      isVariableAmountInvalid
+                      isDueDateInvalid
                         ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
                         : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
                     "
                   />
-                  <div
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
-                  >
-                    {{ currencyStore.currentCurrency.code }}
-                  </div>
                 </div>
+                <p
+                  v-if="isDueDateInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  {{
+                    isEditMode
+                      ? "Veuillez sélectionner une date valide."
+                      : "La date d'échéance ne peut pas être dans le passé."
+                  }}
+                </p>
               </div>
-
-              <p
-                v-if="isFixedAmountInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                Le montant fixe doit être un nombre positif supérieur à 0.
-              </p>
-              <p
-                v-if="isVariableAmountInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                Le montant min doit être &ge; 0 et le max doit être strictement
-                supérieur au min.
-              </p>
             </div>
 
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                Prochaine Échéance
-              </label>
-              <div class="relative">
-                <input
-                  type="date"
-                  v-model="dueDate"
-                  @blur="touched.dueDate = true"
-                  :min="isEditMode ? '' : todayDateStr"
-                  class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white appearance-none"
-                  :class="
-                    isDueDateInvalid
-                      ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
-                      : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
-                  "
-                />
-              </div>
-              <p
-                v-if="isDueDateInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                {{
-                  isEditMode
-                    ? "Veuillez sélectionner une date valide."
-                    : "La date d'échéance ne peut pas être dans le passé."
-                }}
-              </p>
-            </div>
-
-            <div class="pt-4 flex flex-col sm:flex-row gap-3">
+            <div
+              class="p-5 sm:p-8 pt-4 sm:pt-5 border-t border-gray-100 flex-shrink-0 flex flex-col sm:flex-row gap-3 bg-white"
+            >
               <button
                 type="button"
                 @click="handleClose"
-                class="flex-1 py-4 border border-gray-300 text-gray-700 font-bold rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99]"
+                class="flex-1 py-3.5 border border-gray-300 text-gray-700 font-bold rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99]"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 :disabled="!isFormValid"
-                class="flex-1 bg-[#5A877E] text-white py-4 font-bold rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-lg shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 bg-[#5A877E] text-white py-3.5 font-bold rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-lg shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ isEditMode ? "Sauvegarder" : "Confirmer" }}
               </button>
