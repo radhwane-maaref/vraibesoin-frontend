@@ -21,12 +21,21 @@
       </div>
     </transition>
 
-    <h3 class="text-lg sm:text-xl font-semibold text-slate-900 mb-3">
-      Mes revenus
-    </h3>
+    <div v-if="showHeader" class="flex justify-between items-center mb-3">
+      <h3 class="text-lg sm:text-xl font-semibold text-slate-900">
+        Mes revenus
+      </h3>
+      <router-link
+        v-if="currentIncomes.length > limit && limit !== null"
+        :to="{ name: 'incomes' }"
+        class="text-xs font-semibold text-black underline underline-offset-2 transition-colors"
+      >
+        Voir tout
+      </router-link>
+    </div>
 
     <div
-      v-if="financeStore.incomes.length === 0"
+      v-if="currentIncomes.length === 0"
       class="text-sm text-gray-400 italic bg-gray-50 p-4 rounded-[16px] text-center"
     >
       Aucun revenu programmé.
@@ -130,37 +139,6 @@
           </div>
         </li>
       </transition-group>
-
-      <div
-        v-if="financeStore.incomes.length > 3"
-        class="pt-1 flex justify-center"
-      >
-        <button
-          type="button"
-          @click="isExpanded = !isExpanded"
-          class="flex items-center gap-1 text-xs font-bold text-[#5B8C85] hover:text-[#4a736d] bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-full transition-all border border-gray-100 shadow-sm"
-        >
-          <span>{{
-            isExpanded
-              ? "Voir moins"
-              : `Voir plus (${financeStore.incomes.length - 3})`
-          }}</span>
-          <svg
-            class="w-3 h-3 transition-transform duration-300"
-            :class="{ 'rotate-180': isExpanded }"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="3"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-      </div>
     </div>
 
     <div
@@ -170,25 +148,7 @@
       <div
         class="premium-card text-[#1F2937] w-full max-w-md font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl"
       >
-        <div class="p-4 sm:p-8 relative">
-          <button
-            @click="closeModal"
-            class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-700 transition-colors z-10"
-          >
-            <svg
-              class="w-5 h-5 sm:w-6 sm:h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+        <div class="p-4 sm:p-1 relative">
           <h2 class="text-lg sm:text-2xl font-bold text-gray-900 text-center">
             {{ isEditing ? "Modifier le revenu" : "Ajouter un revenu" }}
           </h2>
@@ -386,6 +346,12 @@ import { useCurrencyStore } from "@/stores/currency";
 import { useUiStore } from "@/stores/ui";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 
+const props = defineProps({
+  limit: { type: Number, default: 3 },
+  showHeader: { type: Boolean, default: true },
+  customIncomes: { type: Array, default: null },
+});
+
 const uiStore = useUiStore();
 
 const activeSwipeId = ref(null);
@@ -434,7 +400,6 @@ const incomeToDeleteId = ref(null);
 const isSubmitting = ref(false);
 const isEditing = ref(false);
 const editingId = ref(null);
-const isExpanded = ref(false);
 const errors = ref({ name: "", amount: "", date: "" });
 const toastMessage = ref("");
 const toastType = ref("success");
@@ -447,11 +412,14 @@ const showToast = (msg, type = "success") => {
   }, 4000);
 };
 
+const currentIncomes = computed(() => {
+  return props.customIncomes !== null ? props.customIncomes : financeStore.incomes;
+});
+
 const displayedIncomes = computed(() => {
-  if (!financeStore.incomes) return [];
-  return isExpanded.value
-    ? financeStore.incomes
-    : financeStore.incomes.slice(0, 3);
+  if (!currentIncomes.value) return [];
+  if (props.limit === null) return currentIncomes.value;
+  return currentIncomes.value.slice(0, props.limit);
 });
 
 const todayDate = computed(() => new Date().toISOString().split("T")[0]);
