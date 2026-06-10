@@ -6,7 +6,7 @@
       class="bg-gradient-to-br from-[#E1EBE8]/50 to-white rounded-2xl p-4 shadow-sm relative overflow-hidden"
     >
       <div class="flex justify-between items-start">
-        <h3 class="font-bold text-gray-900 mb-1">Conseil du jour</h3>
+        <h3 class="text-lg font-semibold">Conseil du jour</h3>
         <svg
           class="w-6 h-6 text-[#5A877E] opacity-70"
           fill="none"

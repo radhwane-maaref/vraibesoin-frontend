@@ -1,63 +1,103 @@
 <template>
-  <div v-if="visibleIntentions.length > 0" class="bg-[#FEF9C3] rounded-3xl p-5 shadow-sm border border-[#FEF08A] mb-6">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="bg-[#FEF08A] p-2 rounded-xl">
-        <svg class="w-5 h-5 text-[#B45309]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-        </svg>
-      </div>
+  <div
+    v-if="visibleIntentions.length > 0"
+    class="bg-[#FFF9E6] border border-slate-200/80 rounded-3xl p-6 mb-8 custom-font-dm"
+  >
+    <div class="flex items-center gap-4 mb-1">
       <div>
-        <h2 class="text-[15px] font-bold text-[#92400E]">Analyses en attente</h2>
-        <p class="text-xs text-[#B45309]">Confirmez vos intentions pour clôturer l'analyse.</p>
+        <h2 class="text-lg sm:text-xl font-semibold text-slate-900">
+          Analyses à finaliser
+        </h2>
       </div>
     </div>
 
-    <div class="space-y-3">
-      <div v-for="item in displayedIntentions" :key="item.id" class="bg-white/80 rounded-2xl p-4 flex flex-col gap-3 border border-[#FEF08A]/50">
-        <div class="flex justify-between items-start">
-          <span class="font-bold text-gray-800 text-sm">{{ item.product_name }}</span>
-          <span class="font-bold text-[#5B8C85] text-sm">{{ item.product_price }} {{ currencyStore.currentCurrency.code }}</span>
+    <!-- Carousel Container -->
+    <div
+      ref="carouselRef"
+      @scroll="onScroll"
+      class="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 -mx-2 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+    >
+      <div
+        v-for="item in visibleIntentions"
+        :key="item.id"
+        class="flex-none w-[85%] sm:w-[320px] snap-center bg-white rounded-2xl p-5 shadow-sm flex flex-col border border-slate-100"
+      >
+        <div class="flex justify-between items-center mb-4 gap-4">
+          <span class="font-semibold text-slate-800 text-base truncate">{{
+            item.product_name
+          }}</span>
+          <span class="font-bold text-slate-900 text-base whitespace-nowrap"
+            >{{ item.product_price }}
+            {{ currencyStore.currentCurrency.code }}</span
+          >
         </div>
 
-        <div class="flex gap-2 w-full mt-1">
-          <button @click="ignoreItem(item.id)" class="flex-1 py-2 bg-white border border-gray-200 text-gray-500 text-xs font-bold rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex gap-2 w-full mt-auto">
+          <button
+            @click="ignoreItem(item.id)"
+            class="flex-1 px-3 py-1.5 bg-transparent border border-[#5B8C85]/30 text-[#5B8C85] text-xs font-medium rounded-full hover:bg-[#5B8C85]/5 transition-colors"
+          >
             Ignorer pour 24h
           </button>
-          <button @click="confirmItem(item.id)" class="flex-1 py-2 bg-[#5B8C85] text-white text-xs font-bold rounded-xl hover:bg-[#4a736d] transition-colors shadow-sm">
-            Confirmer
+          <button
+            @click="confirmItem(item.id)"
+            class="flex-1 px-3 py-1.5 bg-[#5B8C85] hover:bg-[#4d7872] text-white text-xs font-medium rounded-full transition-colors shadow-sm"
+          >
+            Continuer l'analyse
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Contrôle Voir Plus / Voir Moins -->
-    <button v-if="visibleIntentions.length > 5" @click="expanded = !expanded" class="w-full mt-4 flex justify-center items-center gap-1 text-[#92400E] text-xs font-bold hover:underline">
-      {{ expanded ? 'Voir moins' : `Voir toutes les analyses (${visibleIntentions.length})` }}
-    </button>
+    <!-- Pagination Badge -->
+    <div
+      v-if="visibleIntentions.length > 1"
+      class="flex flex-col items-center gap-3 mt-2"
+    >
+      <!-- Dots -->
+      <div class="flex items-center gap-1.5">
+        <div
+          v-for="(_, index) in visibleIntentions"
+          :key="'dot-' + index"
+          :class="[
+            'rounded-full transition-all duration-300',
+            currentIndex === index
+              ? 'bg-[#5B8C85] w-8 h-2'
+              : 'bg-[#5B8C85]/20 w-2 h-2',
+          ]"
+        ></div>
+      </div>
+      <!-- Counter Text -->
+      <span class="text-sm font-medium text-slate-500">
+        {{ currentIndex + 1 }} sur {{ visibleIntentions.length }} à finaliser
+      </span>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useCurrencyStore } from '@/stores/currency';
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCurrencyStore } from "@/stores/currency";
 
 const props = defineProps({
   intentions: {
     type: Array,
     required: true,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
 const router = useRouter();
 const currencyStore = useCurrencyStore();
-const expanded = ref(false);
+
 const hiddenItems = ref({});
+const carouselRef = ref(null);
+const currentIndex = ref(0);
 
 onMounted(() => {
   // Récupérer l'état de l'ignorance depuis le localStorage
-  const stored = localStorage.getItem('vrai_besoin_hidden_reminders');
+  const stored = localStorage.getItem("vrai_besoin_hidden_reminders");
   if (stored) {
     hiddenItems.value = JSON.parse(stored);
   }
@@ -67,27 +107,51 @@ const visibleIntentions = computed(() => {
   const now = Date.now();
   const ONE_DAY = 24 * 60 * 60 * 1000;
 
-  return props.intentions.filter(item => {
+  return props.intentions.filter((item) => {
     const hiddenAt = hiddenItems.value[item.id];
     // Si l'objet a été masqué il y a moins de 24h, on l'exclut
-    if (hiddenAt && (now - hiddenAt) < ONE_DAY) {
+    if (hiddenAt && now - hiddenAt < ONE_DAY) {
       return false;
     }
     return true;
   });
 });
 
-const displayedIntentions = computed(() => {
-  return expanded.value ? visibleIntentions.value : visibleIntentions.value.slice(0, 5);
-});
+const onScroll = () => {
+  if (!carouselRef.value) return;
+  const container = carouselRef.value;
+  const scrollLeft = container.scrollLeft;
+
+  if (container.children.length > 0) {
+    const childWidth = container.children[0].offsetWidth;
+    const gap = 12; // gap-3 corresponds to 12px
+    const itemTotalWidth = childWidth + gap;
+    currentIndex.value = Math.round(scrollLeft / itemTotalWidth);
+  }
+};
 
 const ignoreItem = (id) => {
   hiddenItems.value[id] = Date.now();
-  localStorage.setItem('vrai_besoin_hidden_reminders', JSON.stringify(hiddenItems.value));
+  localStorage.setItem(
+    "vrai_besoin_hidden_reminders",
+    JSON.stringify(hiddenItems.value),
+  );
+
+  // Ajuster currentIndex si on ignore l'élément courant et qu'on est à la fin
+  setTimeout(() => {
+    if (currentIndex.value >= visibleIntentions.value.length) {
+      currentIndex.value = Math.max(0, visibleIntentions.value.length - 1);
+    }
+  }, 0);
 };
 
 const confirmItem = (id) => {
   // Redirige vers la vue d'évaluation pour finaliser la décision
-  router.push({ name: 'reflection', params: { id } });
+  router.push({ name: "reflection", params: { id } });
 };
 </script>
+<style scoped>
+.custom-font-dm {
+  font-family: "DM Sans", sans-serif;
+}
+</style>

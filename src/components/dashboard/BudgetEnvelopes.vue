@@ -46,10 +46,7 @@
 
     <div class="flex items-center justify-between mb-5">
       <div>
-        <h3 class="text-lg font-bold text-gray-900">Enveloppes Budgétaires</h3>
-        <p class="text-xs text-gray-400 mt-0.5">
-          Isolez vos fonds pour vos projets spécifiques
-        </p>
+        <h3 class="text-lg font-semibold">Enveloppes Budgétaires</h3>
       </div>
       <button
         @click="openAddModal"

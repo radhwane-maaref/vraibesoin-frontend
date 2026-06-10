@@ -6,7 +6,7 @@
       <h1
         class="text-center text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight"
       >
-        Accueil
+        Acceuil
       </h1>
 
       <div v-if="isLoading" class="flex justify-center items-center py-10">
@@ -27,51 +27,17 @@
           :user-name="dashboardData.user_name"
           :message="dashboardData.ai_coach_message"
         />
-
+        <BalanceCard
+          key="balance-card"
+          :monthly-savings="dashboardData.stats.monthly_savings"
+          :mastery-percentage="dashboardData.mastery_ratio"
+          @add-income="triggerAddIncome"
+        />
         <ReminderBanner
           v-if="dashboardData.pending_intentions"
           key="reminder-banner"
           :intentions="dashboardData.pending_intentions"
         />
-
-        <BalanceCard key="balance-card" @add-income="triggerAddIncome" />
-
-        <div
-          key="monthly-savings"
-          class="bg-gradient-to-r from-[#5B8C85] to-[#4a736d] rounded-[24px] p-6 shadow-sm text-white"
-        >
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-sm font-medium opacity-90 mb-1">
-                Montant sauvé ce mois-ci
-              </p>
-              <div class="flex items-baseline gap-1.5">
-                <h2 class="text-4xl font-bold">
-                  {{ Number(dashboardData.stats.monthly_savings).toFixed(2) }}
-                </h2>
-                <span class="text-lg font-medium opacity-90">
-                  {{ currencyStore.currentCurrency.code }}
-                </span>
-              </div>
-            </div>
-
-            <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
-              <svg
-                class="w-7 h-7 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
 
         <ScheduledIncomes key="scheduled-incomes" ref="incomesListRef" />
 
@@ -169,11 +135,6 @@
           </div>
         </div>
 
-        <MasteryRatioChart
-          key="mastery-chart"
-          :percentage="dashboardData.mastery_ratio"
-        />
-
         <SavingsCard
           v-if="dashboardData.savings_goal"
           key="savings-card"
@@ -199,7 +160,6 @@ import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
 
 import AiCoachMessage from "@/components/dashboard/AiCoachMessage.vue";
-import MasteryRatioChart from "@/components/dashboard/MasteryRatioChart.vue";
 import SavingsCard from "@/components/dashboard/SavingsCard.vue";
 import ReminderBanner from "@/components/dashboard/ReminderBanner.vue";
 import BalanceCard from "@/components/dashboard/BalanceCard.vue";
