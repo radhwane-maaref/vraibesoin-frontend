@@ -107,6 +107,72 @@
         </form>
       </main>
     </div>
+
+    <!-- Custom Modal -->
+    <div
+      v-if="modal.show"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    >
+      <div
+        class="bg-[#FFFFFF] border border-[#D9D9D9] rounded-[24px] shadow-2xl p-6 sm:p-8 max-w-sm w-full animate-fade-in"
+      >
+        <div class="flex flex-col items-center text-center">
+          <!-- Icon depending on status -->
+          <div
+            v-if="modal.type === 'success'"
+            class="w-12 h-12 rounded-full bg-[#5B8C85]/10 flex items-center justify-center text-[#5B8C85] mb-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4.5 12.75l6 6 9-13.5"
+              />
+            </svg>
+          </div>
+          <div
+            v-else
+            class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+              />
+            </svg>
+          </div>
+
+          <h3 class="text-[18px] sm:text-[20px] font-bold text-[#000000] mb-2">
+            {{ modal.title }}
+          </h3>
+          <p class="text-gray-500 text-[14px] sm:text-[15px] leading-relaxed mb-6">
+            {{ modal.message }}
+          </p>
+
+          <button
+            @click="closeModal"
+            class="w-full bg-[#5B8C85] hover:bg-[#4a736d] text-white text-[16px] font-medium py-2.5 sm:py-3 rounded-[18px] transition-colors focus:outline-none focus:ring-2 focus:ring-[#5B8C85]/30"
+          >
+            D'accord
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -124,10 +190,30 @@ const form = ref({
 const hoveredRating = ref(0);
 const isSubmitting = ref(false);
 
+const modal = ref({
+  show: false,
+  type: "success",
+  title: "",
+  message: "",
+});
+
+const showModal = (type, title, message) => {
+  modal.value = {
+    show: true,
+    type,
+    title,
+    message,
+  };
+};
+
+const closeModal = () => {
+  modal.value.show = false;
+};
+
 const submitForm = async () => {
   if (!form.value.subject || !form.value.message) return;
   if (form.value.rating === 0) {
-    alert("Veuillez sélectionner une note entre 1 et 5 étoiles.");
+    showModal("error", "Note requise", "Veuillez sélectionner une note entre 1 et 5 étoiles.");
     return;
   }
 
@@ -142,14 +228,14 @@ const submitForm = async () => {
 
     await api.post("/app-feedback/", payload);
 
-    alert("Votre message a été envoyé avec succès !");
+    showModal("success", "Message envoyé", "Votre message a été envoyé avec succès !");
 
     form.value.rating = 0;
     form.value.subject = "";
     form.value.message = "";
   } catch (error) {
     console.error("Erreur lors de la soumission du formulaire:", error);
-    alert("Une erreur est survenue lors de l'envoi de votre message.");
+    showModal("error", "Erreur d'envoi", "Une erreur est survenue lors de l'envoi de votre message.");
   } finally {
     isSubmitting.value = false;
   }
@@ -158,4 +244,18 @@ const submitForm = async () => {
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 </style>

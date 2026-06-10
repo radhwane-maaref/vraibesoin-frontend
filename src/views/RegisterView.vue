@@ -548,7 +548,12 @@ const { login: registerWithGoogle } = useTokenClient({
     googleError.value = "";
     try {
       await authStore.googleLogin(response.access_token);
-      await router.push("/dashboard");
+      await authStore.fetchUserProfile();
+      if (authStore.user && !authStore.user.is_staff && !authStore.user.is_onboarded) {
+        await router.push("/onboarding");
+      } else {
+        await router.push("/dashboard");
+      }
     } catch (err) {
       const backendError =
         err.response?.data?.error || err.response?.data?.non_field_errors?.[0];

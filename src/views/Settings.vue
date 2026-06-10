@@ -179,7 +179,7 @@
               <span
                 class="text-[15px] sm:text-lg font-medium text-gray-800 group-hover:text-gray-900"
               >
-                Aide et support
+                Avis et réclamations
               </span>
             </div>
             <svg

@@ -23,8 +23,16 @@
         <div
           class="premium-card text-[#1F2937] w-full max-w-lg max-h-[90vh] flex flex-col font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl"
         >
-          <div class="p-5 sm:p-8 flex-shrink-0 relative">
-            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 text-center">
+          <div class="p-4 sm:p-8 flex-shrink-0 relative border-b border-gray-100 sm:border-none">
+            <button
+              @click="handleClose"
+              class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-700 transition-colors z-10"
+            >
+              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 text-center">
               {{ isEditMode ? "Modifier la Charge" : "Ajouter une charge " }}
             </h2>
           </div>
@@ -33,8 +41,8 @@
             @submit.prevent="handleSubmit"
             class="flex-grow flex flex-col overflow-hidden"
           >
-            <div class="space-y-5 overflow-y-auto px-5 sm:px-8 pb-4 flex-grow">
-              <div class="space-y-2">
+            <div class="space-y-3 sm:space-y-5 overflow-y-auto px-4 sm:px-8 py-3 sm:py-4 flex-grow">
+              <div class="space-y-1 sm:space-y-2">
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
                 >
@@ -55,7 +63,7 @@
                 >
                   <div
                     v-if="selectedChargeType === 'Autre'"
-                    class="mt-2 space-y-1"
+                    class="mt-1 sm:mt-2 space-y-1"
                   >
                     <input
                       type="text"
@@ -63,7 +71,7 @@
                       @blur="touched.name = true"
                       placeholder="Saisissez le nom de la charge"
                       maxlength="51"
-                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
+                      class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
                       :class="
                         isNameInvalid
                           ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
@@ -80,19 +88,19 @@
                 </p>
               </div>
 
-              <div class="space-y-2">
+              <div class="space-y-1 sm:space-y-2">
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
                 >
                   Type de montant
                 </label>
                 <div
-                  class="flex gap-3 bg-white p-1.5 border border-gray-200 rounded-3xl shadow-sm"
+                  class="flex gap-2 sm:gap-3 bg-white p-1 sm:p-1.5 border border-gray-200 rounded-2xl sm:rounded-3xl shadow-sm"
                 >
                   <button
                     type="button"
                     @click="isFixed = true"
-                    class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
+                    class="flex-1 py-2 sm:py-3 text-xs sm:text-sm font-bold rounded-xl sm:rounded-2xl transition-all"
                     :class="
                       isFixed
                         ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
@@ -104,7 +112,7 @@
                   <button
                     type="button"
                     @click="isFixed = false"
-                    class="flex-1 py-3 text-sm font-bold rounded-2xl transition-all"
+                    class="flex-1 py-2 sm:py-3 text-xs sm:text-sm font-bold rounded-xl sm:rounded-2xl transition-all"
                     :class="
                       !isFixed
                         ? 'bg-[#E1EBE8] text-[#5A877E] shadow-sm'
@@ -116,7 +124,7 @@
                 </div>
               </div>
 
-              <div class="space-y-2">
+              <div class="space-y-1 sm:space-y-2">
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
                 >
@@ -130,7 +138,7 @@
                     @blur="touched.amount = true"
                     step="0.01"
                     placeholder="0.00"
-                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-16"
+                    class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-12 sm:pr-16"
                     :class="
                       isFixedAmountInvalid
                         ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
@@ -138,13 +146,13 @@
                     "
                   />
                   <div
-                    class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-sm"
+                    class="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-xs sm:text-sm"
                   >
                     {{ currencyStore.currentCurrency.code }}
                   </div>
                 </div>
 
-                <div v-else class="grid grid-cols-2 gap-4">
+                <div v-else class="grid grid-cols-2 gap-3 sm:gap-4">
                   <div class="relative">
                     <input
                       type="number"
@@ -152,7 +160,7 @@
                       @blur="touched.amount = true"
                       step="0.01"
                       placeholder="Min"
-                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                      class="w-full px-3 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-10 sm:pr-14"
                       :class="
                         isVariableAmountInvalid
                           ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
@@ -160,7 +168,7 @@
                       "
                     />
                     <div
-                      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
+                      class="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-[10px] sm:text-xs"
                     >
                       {{ currencyStore.currentCurrency.code }}
                     </div>
@@ -173,7 +181,7 @@
                       @blur="touched.amount = true"
                       step="0.01"
                       placeholder="Max"
-                      class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-14"
+                      class="w-full px-3 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-10 sm:pr-14"
                       :class="
                         isVariableAmountInvalid
                           ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
@@ -181,7 +189,7 @@
                       "
                     />
                     <div
-                      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-xs"
+                      class="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold text-[10px] sm:text-xs"
                     >
                       {{ currencyStore.currentCurrency.code }}
                     </div>
@@ -203,7 +211,7 @@
                 </p>
               </div>
 
-              <div class="space-y-2">
+              <div class="space-y-1 sm:space-y-2">
                 <label
                   class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
                 >
@@ -215,13 +223,32 @@
                     v-model="dueDate"
                     @blur="touched.dueDate = true"
                     :min="isEditMode ? '' : todayDateStr"
-                    class="w-full px-5 py-4 border rounded-3xl text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white appearance-none"
-                    :class="
+                    class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base font-semibold outline-none transition-all shadow-sm bg-white appearance-none pr-10 sm:pr-12"
+                    :class="[
                       isDueDateInvalid
                         ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
-                        : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
-                    "
+                        : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]',
+                      !dueDate ? 'text-gray-400' : 'text-[#1F2937]'
+                    ]"
                   />
+                  <!-- Icône Calendrier -->
+                  <div
+                    class="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400"
+                  >
+                    <svg
+                      class="w-5 h-5 sm:w-6 sm:h-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
                 </div>
                 <p
                   v-if="isDueDateInvalid"
@@ -237,19 +264,19 @@
             </div>
 
             <div
-              class="p-5 sm:p-8 pt-4 sm:pt-5 border-t border-gray-100 flex-shrink-0 flex flex-col sm:flex-row gap-3 bg-white"
+              class="p-4 sm:p-8 pt-3 sm:pt-5 border-t border-gray-100 flex-shrink-0 flex gap-3 bg-white"
             >
               <button
                 type="button"
                 @click="handleClose"
-                class="flex-1 py-3.5 border border-gray-300 text-gray-700 font-bold rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99]"
+                class="flex-1 py-2.5 sm:py-3.5 border border-gray-300 text-gray-700 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99] text-sm sm:text-base"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 :disabled="!isFormValid"
-                class="flex-1 bg-[#5A877E] text-white py-3.5 font-bold rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-lg shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 bg-[#5A877E] text-white py-2.5 sm:py-3.5 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-lg shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 {{ isEditMode ? "Sauvegarder" : "Confirmer" }}
               </button>

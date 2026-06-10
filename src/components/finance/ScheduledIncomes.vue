@@ -153,124 +153,158 @@
       v-if="showIncomeModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-40 p-4"
     >
-      <div class="premium-card w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h3 class="text-xl font-bold text-gray-900 mb-6">
-          {{ isEditing ? "Modifier le revenu" : "Ajouter un revenu" }}
-        </h3>
+      <div class="premium-card text-[#1F2937] w-full max-w-md font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl">
+        <div class="p-4 sm:p-8 relative">
+          <button
+            @click="closeModal"
+            class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-700 transition-colors z-10"
+          >
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <h2 class="text-lg sm:text-2xl font-bold text-gray-900 text-center">
+            {{ isEditing ? "Modifier le revenu" : "Ajouter un revenu" }}
+          </h2>
+        </div>
+
         <form @submit.prevent="submitIncome">
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-2"
-              >Type de revenu</label
-            >
-            <CustomSelect
-              v-model="newIncome.nameSelection"
-              :options="incomeTypeOptions"
-              :error="!!errors.name"
-              placeholder="Sélectionnez un type..."
-              @change="errors.name = ''"
-            />
+          <div class="space-y-3 sm:space-y-4 px-4 sm:px-8 py-3 sm:py-4">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >Type de revenu</label
+              >
+              <CustomSelect
+                v-model="newIncome.nameSelection"
+                :options="incomeTypeOptions"
+                :error="!!errors.name"
+                placeholder="Sélectionnez un type..."
+                @change="errors.name = ''"
+              />
 
-            <transition
-              enter-active-class="transition ease-out duration-200"
-              enter-from-class="opacity-0 -translate-y-2 h-0"
-              enter-to-class="opacity-100 translate-y-0 h-auto"
-            >
-              <div v-if="newIncome.nameSelection === 'OTHER'" class="mt-3">
+              <transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 -translate-y-2 h-0"
+                enter-to-class="opacity-100 translate-y-0 h-auto"
+              >
+                <div v-if="newIncome.nameSelection === 'OTHER'" class="mt-1 sm:mt-2 space-y-1">
+                  <input
+                    v-model="customIncomeName"
+                    type="text"
+                    placeholder="Précisez votre type de revenu..."
+                    @input="errors.name = ''"
+                    class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
+                    :class="
+                      errors.name
+                        ? 'border-red-400 bg-red-50 focus:ring-red-200'
+                        : 'border-gray-200 focus:ring-2 focus:ring-[#5B8C85]'
+                    "
+                  />
+                </div>
+              </transition>
+              <p
+                v-if="errors.name"
+                class="text-red-500 text-xs font-medium ml-2"
+              >
+                {{ errors.name }}
+              </p>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >Montant ({{
+                  currencyStore.currentCurrency?.code || "TND"
+                }})</label
+              >
+              <input
+                v-model="newIncome.amount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="0.00"
+                @input="errors.amount = ''"
+                class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
+                :class="
+                  errors.amount
+                    ? 'border-red-400 bg-red-50 focus:ring-red-200'
+                    : 'border-gray-200 focus:ring-2 focus:ring-[#5B8C85]'
+                "
+              />
+              <p
+                v-if="errors.amount"
+                class="text-red-500 text-xs font-medium ml-2"
+              >
+                {{ errors.amount }}
+              </p>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >Fréquence</label
+              >
+              <CustomSelect
+                v-model="newIncome.frequency"
+                :options="frequencyOptions"
+              />
+            </div>
+
+            <div v-if="newIncome.frequency !== 'ONE_TIME'" class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >Date du prochain versement</label
+              >
+              <div class="relative">
                 <input
-                  v-model="customIncomeName"
-                  type="text"
-                  placeholder="Précisez votre type de revenu..."
-                  @input="errors.name = ''"
-                  class="w-full py-4 px-5 rounded-3xl border outline-none transition-all text-[#1F2937]"
-                  :class="
-                    errors.name
+                  v-model="newIncome.next_payment_date"
+                  type="date"
+                  :min="todayDate"
+                  @input="errors.date = ''"
+                  class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base font-semibold outline-none transition-all shadow-sm bg-white appearance-none pr-10 sm:pr-12"
+                  :class="[
+                    errors.date
                       ? 'border-red-400 bg-red-50 focus:ring-red-200'
-                      : 'border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-[#5B8C85]/20 focus:border-[#5B8C85]'
-                  "
+                      : 'border-gray-200 focus:ring-2 focus:ring-[#5B8C85]',
+                    !newIncome.next_payment_date ? 'text-gray-400' : 'text-[#1F2937]'
+                  ]"
                 />
+                <!-- Icône Calendrier -->
+                <div
+                  class="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400"
+                >
+                  <svg
+                    class="w-5 h-5 sm:w-6 sm:h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
               </div>
-            </transition>
-            <p
-              v-if="errors.name"
-              class="text-red-500 text-xs font-medium mt-1.5 ml-2"
-            >
-              {{ errors.name }}
-            </p>
+              <p
+                v-if="errors.date"
+                class="text-red-500 text-xs font-medium ml-2"
+              >
+                {{ errors.date }}
+              </p>
+            </div>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-2"
-              >Montant ({{
-                currencyStore.currentCurrency?.code || "TND"
-              }})</label
-            >
-            <input
-              v-model="newIncome.amount"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="0.00"
-              @input="errors.amount = ''"
-              class="w-full py-4 px-5 rounded-3xl border outline-none transition-all text-[#1F2937]"
-              :class="
-                errors.amount
-                  ? 'border-red-400 bg-red-50 focus:ring-red-200'
-                  : 'border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-[#5B8C85]/20 focus:border-[#5B8C85]'
-              "
-            />
-            <p
-              v-if="errors.amount"
-              class="text-red-500 text-xs font-medium mt-1.5 ml-2"
-            >
-              {{ errors.amount }}
-            </p>
-          </div>
-
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-2"
-              >Fréquence</label
-            >
-            <CustomSelect
-              v-model="newIncome.frequency"
-              :options="frequencyOptions"
-            />
-          </div>
-
-          <div v-if="newIncome.frequency !== 'ONE_TIME'" class="mb-6">
-            <label class="block text-sm font-semibold text-gray-700 mb-2"
-              >Date du prochain versement</label
-            >
-            <input
-              v-model="newIncome.next_payment_date"
-              type="date"
-              :min="todayDate"
-              @input="errors.date = ''"
-              class="w-full py-4 px-5 rounded-3xl border outline-none transition-all text-[#1F2937]"
-              :class="
-                errors.date
-                  ? 'border-red-400 bg-red-50 focus:ring-red-200'
-                  : 'border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-[#5B8C85]/20 focus:border-[#5B8C85]'
-              "
-            />
-            <p
-              v-if="errors.date"
-              class="text-red-500 text-xs font-medium mt-1.5 ml-2"
-            >
-              {{ errors.date }}
-            </p>
-          </div>
-
-          <div class="flex justify-end space-x-3 mt-8">
+          <div class="p-4 sm:p-8 pt-2 sm:pt-4 flex gap-3 bg-white mt-1">
             <button
               type="button"
               @click="closeModal"
-              class="px-6 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-3xl font-medium transition-colors"
+              class="flex-1 py-2.5 sm:py-3.5 border border-gray-300 text-gray-700 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99] text-sm sm:text-base"
             >
               Annuler
             </button>
             <button
               type="submit"
-              class="px-6 py-3 bg-[#5B8C85] text-white rounded-3xl hover:bg-[#4a736d] font-medium transition-colors shadow-sm disabled:opacity-70"
+              class="flex-1 bg-[#5B8C85] text-white py-2.5 sm:py-3.5 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-[#4a736d] transition-all active:scale-[0.99] shadow-lg shadow-[#5B8C85]/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               :disabled="isSubmitting"
             >
               {{ isSubmitting ? "Enregistrement..." : "Enregistrer" }}
@@ -284,21 +318,21 @@
       v-if="showDeleteModal"
       class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div class="premium-card w-full max-w-sm text-center">
-        <h3 class="text-lg font-bold text-gray-900 mb-2">
+      <div class="premium-card text-[#1F2937] w-full max-w-sm font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl text-center p-6 sm:p-8">
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">
           Supprimer ce revenu ?
         </h3>
         <p class="text-sm text-gray-500 mb-6">Cette action est irréversible.</p>
-        <div class="flex space-x-3">
+        <div class="flex gap-3">
           <button
             @click="showDeleteModal = false"
-            class="flex-1 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-3xl font-medium"
+            class="flex-1 py-2.5 sm:py-3 border border-gray-300 text-gray-700 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99] text-sm"
           >
             Annuler
           </button>
           <button
             @click="executeDelete"
-            class="flex-1 py-3 bg-red-600 text-white rounded-3xl hover:bg-red-700 font-medium"
+            class="flex-1 py-2.5 sm:py-3 bg-red-500 text-white font-bold rounded-2xl sm:rounded-[2rem] hover:bg-red-600 transition-all active:scale-[0.99] shadow-lg shadow-red-500/20 text-sm"
           >
             Supprimer
           </button>
@@ -501,3 +535,29 @@ const formatFrequency = (freq) =>
     YEARLY: "Annuel",
   })[freq] || freq;
 </script>
+
+<style scoped>
+/* Masquer les flèches natives sur les inputs de type number */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Style uniforme pour le date picker */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  height: auto;
+}
+</style>

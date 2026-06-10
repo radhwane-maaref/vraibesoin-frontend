@@ -21,126 +21,130 @@
         leave-to-class="transform opacity-0 scale-95 translate-y-4"
       >
         <div
-          class="premium-card text-[#1F2937] sm:p-8 w-full max-w-md relative"
+          class="premium-card text-[#1F2937] w-full max-w-md font-['DM_Sans',_sans-serif] relative bg-white overflow-hidden rounded-3xl"
         >
-          <button
-            @click="handleClose"
-            class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
+          <div class="p-4 sm:p-8 relative">
+            <button
+              @click="handleClose"
+              class="absolute top-4 right-4 sm:top-5 sm:right-5 text-gray-400 hover:text-gray-700 transition-colors z-10"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          <h2 class="text-xl font-bold text-gray-900 mb-6 text-center">
-            Dépense Essentielle
-          </h2>
-
-          <form @submit.prevent="handleSubmit" class="space-y-5">
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+              <svg
+                class="w-5 h-5 sm:w-6 sm:h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
               >
-                Montant
-              </label>
-              <div class="relative">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
+            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 text-center">
+              Dépense Essentielle
+            </h2>
+          </div>
+
+          <form @submit.prevent="handleSubmit">
+            <div class="space-y-3 sm:space-y-5 px-4 sm:px-8 py-3 sm:py-4">
+              <div class="space-y-1 sm:space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  Montant
+                </label>
+                <div class="relative">
+                  <input
+                    type="number"
+                    v-model="amount"
+                    @blur="touched.amount = true"
+                    step="0.01"
+                    placeholder="0.00"
+                    class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white pr-12 sm:pr-16"
+                    :class="
+                      isAmountInvalid
+                        ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
+                        : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
+                    "
+                  />
+                  <div
+                    class="absolute right-4 sm:right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-xs sm:text-sm"
+                  >
+                    {{ currencyStore.currentCurrency?.code || "TND" }}
+                  </div>
+                </div>
+                <p
+                  v-if="isAmountInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  Le montant doit être supérieur à 0.
+                </p>
+              </div>
+
+              <div class="space-y-1 sm:space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  Catégorie
+                </label>
+                <CustomSelect
+                  v-model="selectedTag"
+                  :options="tagOptions"
+                  placeholder="Ex: Courses, Carburant..."
+                  :error="isTagInvalid"
+                  @change="touched.tag = true"
+                />
+                <p
+                  v-if="isTagInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
+                >
+                  Veuillez sélectionner une catégorie.
+                </p>
+              </div>
+
+              <div class="space-y-1 sm:space-y-2">
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
+                >
+                  Note (Optionnel)
+                </label>
                 <input
-                  type="number"
-                  v-model="amount"
-                  @blur="touched.amount = true"
-                  step="0.01"
-                  placeholder="0.00"
-                  class="w-full px-5 py-4 border rounded-3xl text-gray-900 font-bold outline-none transition-all shadow-sm bg-white pr-16"
+                  type="text"
+                  v-model="note"
+                  @blur="touched.note = true"
+                  maxlength="100"
+                  placeholder="Détails de l'achat..."
+                  class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
                   :class="
-                    isAmountInvalid
-                      ? 'border-red-400 focus:ring-2 focus:ring-red-200 bg-red-50'
-                      : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]/20 focus:border-[#5A877E]'
+                    isNoteInvalid
+                      ? 'border-red-400 focus:ring-2 focus:ring-red-400 bg-red-50'
+                      : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]'
                   "
                 />
-                <div
-                  class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold text-sm"
+                <p
+                  v-if="isNoteInvalid"
+                  class="text-xs text-red-500 font-medium ml-2"
                 >
-                  {{ currencyStore.currentCurrency?.code || "TND" }}
-                </div>
+                  La note ne doit pas dépasser 100 caractères.
+                </p>
               </div>
-              <p
-                v-if="isAmountInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                Le montant doit être supérieur à 0.
-              </p>
             </div>
 
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                Catégorie
-              </label>
-              <CustomSelect
-                v-model="selectedTag"
-                :options="tagOptions"
-                placeholder="Ex: Courses, Carburant..."
-                :error="isTagInvalid"
-                @change="touched.tag = true"
-              />
-              <p
-                v-if="isTagInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                Veuillez sélectionner une catégorie.
-              </p>
-            </div>
-
-            <div class="space-y-2">
-              <label
-                class="block text-xs font-bold uppercase tracking-wider text-gray-500 ml-1"
-              >
-                Note (Optionnel)
-              </label>
-              <input
-                type="text"
-                v-model="note"
-                @blur="touched.note = true"
-                maxlength="100"
-                placeholder="Détails de l'achat..."
-                class="w-full px-5 py-4 border rounded-3xl text-gray-700 outline-none transition-all shadow-sm bg-white"
-                :class="
-                  isNoteInvalid
-                    ? 'border-red-400 focus:ring-2 focus:ring-red-200 bg-red-50'
-                    : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E]/20 focus:border-[#5A877E]'
-                "
-              />
-              <p
-                v-if="isNoteInvalid"
-                class="text-xs text-red-500 font-medium ml-2"
-              >
-                La note ne doit pas dépasser 100 caractères.
-              </p>
-            </div>
-
-            <div class="pt-4 flex gap-3">
+            <div class="p-4 sm:p-8 pt-3 sm:pt-5 mt-2 flex gap-3 bg-white">
               <button
                 type="button"
                 @click="handleClose"
-                class="flex-1 py-4 border border-gray-200 text-gray-600 font-bold rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99]"
+                class="flex-1 py-2.5 sm:py-3.5 border border-gray-300 text-gray-700 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-gray-50 transition-all active:scale-[0.99] text-sm sm:text-base"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 :disabled="!isFormValid"
-                class="flex-1 bg-[#5A877E] text-white py-4 font-bold rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-md shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                class="flex-1 bg-[#5A877E] text-white py-2.5 sm:py-3.5 font-bold rounded-2xl sm:rounded-[2rem] hover:bg-[#4a7269] transition-all active:scale-[0.99] shadow-lg shadow-[#5A877E]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 Valider
               </button>

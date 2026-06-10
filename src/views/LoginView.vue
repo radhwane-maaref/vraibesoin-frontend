@@ -266,9 +266,14 @@ const handleLogin = async () => {
       password: formData.password,
     });
 
+    // Ensure we fetch the latest profile data before routing
+    await authStore.fetchUserProfile();
+
     // Check role and redirect accordingly
     if (authStore.user?.is_staff) {
       router.push({ name: "admin-dashboard" });
+    } else if (authStore.user && !authStore.user.is_onboarded) {
+      router.push("/onboarding");
     } else {
       router.push("/dashboard");
     }
@@ -283,7 +288,12 @@ const { login: loginWithGoogle } = useTokenClient({
     googleError.value = "";
     try {
       await authStore.googleLogin(response.access_token);
-      await router.push("/dashboard");
+      await authStore.fetchUserProfile();
+      if (authStore.user && !authStore.user.is_staff && !authStore.user.is_onboarded) {
+        await router.push("/onboarding");
+      } else {
+        await router.push("/dashboard");
+      }
     } catch (err) {
       console.error("Erreur SSO Google :", err);
 

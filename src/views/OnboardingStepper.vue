@@ -2,10 +2,10 @@
   <div
     class="min-h-screen bg-gray-50 flex flex-col items-center pt-8 sm:pt-12 px-3 pb-6 sm:px-4"
   >
-    <div
-      class="w-full max-w-2xl bg-white shadow-xl rounded-2xl overflow-hidden"
-    >
-      <div class="bg-gray-100 px-6 sm:px-8 py-5 border-b border-gray-200">
+    <div class="w-full max-w-2xl bg-white shadow-xl rounded-2xl">
+      <div
+        class="bg-gray-100 px-6 sm:px-8 py-5 border-b border-gray-200 rounded-t-2xl"
+      >
         <p
           class="text-center text-sm md:text-base text-gray-700 font-bold mb-4"
         >
@@ -40,7 +40,7 @@
         Chargement des configurations...
       </div>
 
-      <div v-else class="px-6 sm:px-8 py-6 sm:py-8">
+      <div v-else class="px-6 sm:px-8 py-6 sm:py-8 relative z-20">
         <div v-if="currentStep === 1" class="animate-fade-in">
           <h2
             class="text-xl md:text-2xl font-bold text-gray-800 mb-1 tracking-tight"
@@ -134,28 +134,26 @@
               <input
                 type="date"
                 v-model="form.birthDate"
-                :max="maxPastDate"
+                :min="minBirthDate"
+                :max="maxBirthDate"
                 class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#5B8C85] focus:border-[#5B8C85] outline-none transition-colors"
               />
+              <p v-if="ageError" class="text-xs text-red-500 mt-1">
+                L'application est réservée aux personnes âgées de 12 à 100 ans.
+              </p>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Devise principale</label
               >
-              <select
+              <CustomSelect
                 v-model="form.preferredCurrency"
-                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#5B8C85] focus:border-[#5B8C85] outline-none transition-colors bg-white cursor-pointer"
-              >
-                <option value="" disabled>Sélectionnez une devise</option>
-                <option
-                  v-for="currency in currencyStore.availableCurrencies"
-                  :key="currency.code"
-                  :value="currency.code"
-                >
-                  {{ currency.code }} - {{ currency.name }}
-                </option>
-              </select>
+                :options="currencyOptions"
+                placeholder="Sélectionnez une devise"
+                roundedClass="rounded-lg"
+                sizeClass="py-3 text-sm"
+              />
             </div>
           </div>
         </div>
@@ -276,7 +274,7 @@
 
       <div
         v-if="!loadingData"
-        class="bg-white px-6 sm:px-8 py-5 border-t border-gray-200 flex flex-col gap-2"
+        class="bg-white px-6 sm:px-8 py-5 border-t border-gray-200 flex flex-col gap-2 rounded-b-2xl relative z-0"
       >
         <button
           v-if="currentStep < 4"
@@ -333,6 +331,7 @@ import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useCurrencyStore } from "@/stores/currency";
+import CustomSelect from "@/components/shared/CustomSelect.vue";
 import api from "@/services/api";
 
 const router = useRouter();
@@ -344,10 +343,38 @@ const loadingData = ref(true);
 const submitting = ref(false);
 const submitError = ref("");
 
-// Restrict date picker to past dates only
-const maxPastDate = computed(() => {
+// Restrict date picker to users aged between 12 and 100
+const minBirthDate = computed(() => {
   const today = new Date();
+  today.setFullYear(today.getFullYear() - 100);
   return today.toISOString().split("T")[0];
+});
+
+const maxBirthDate = computed(() => {
+  const today = new Date();
+  today.setFullYear(today.getFullYear() - 12);
+  return today.toISOString().split("T")[0];
+});
+
+const ageError = computed(() => {
+  if (!form.birthDate) return false;
+  const birthDateObj = new Date(form.birthDate);
+  if (isNaN(birthDateObj.getTime())) return false;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDateObj.getFullYear();
+  const m = today.getMonth() - birthDateObj.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
+    age--;
+  }
+  return age < 12 || age > 100;
+});
+
+const currencyOptions = computed(() => {
+  return currencyStore.availableCurrencies.map((c) => ({
+    value: c.code,
+    label: `${c.code} - ${c.name}`,
+  }));
 });
 
 // Predefined Options
@@ -426,7 +453,8 @@ onMounted(async () => {
 const isCurrentStepValid = computed(() => {
   if (currentStep.value === 1)
     return form.socioPro.length >= 1 && form.socioPro.length <= 3;
-  if (currentStep.value === 2) return form.birthDate && form.preferredCurrency;
+  if (currentStep.value === 2)
+    return form.birthDate && form.preferredCurrency && !ageError.value;
   if (currentStep.value === 3)
     return form.goals.length >= 1 && form.goals.length <= 3;
   if (currentStep.value === 4) return form.acceptedTerms === true;
