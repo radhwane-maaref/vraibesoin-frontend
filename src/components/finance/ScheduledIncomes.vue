@@ -46,7 +46,7 @@
         <li
           v-for="income in displayedIncomes"
           :key="income.id"
-          class="relative overflow-hidden rounded-[16px] bg-[#F8F6F2]"
+          class="relative overflow-hidden rounded-[16px] bg-[#F9FAFB]"
         >
           <!-- Actions Container (underneath/revealed on swipe) -->
           <div
@@ -194,7 +194,7 @@
           </h2>
         </div>
 
-        <form @submit.prevent="submitIncome">
+        <form @submit.prevent="submitIncome" novalidate>
           <div class="space-y-3 sm:space-y-4 px-4 sm:px-8 py-3 sm:py-4">
             <div class="space-y-1">
               <label
@@ -250,9 +250,9 @@
               <input
                 v-model="newIncome.amount"
                 type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
+                step="1"
+                min="1"
+                placeholder="1000.00"
                 @input="errors.amount = ''"
                 class="w-full px-4 py-3 sm:px-5 sm:py-4 border rounded-2xl sm:rounded-3xl text-sm sm:text-base text-[#1F2937] font-semibold outline-none transition-all shadow-sm bg-white"
                 :class="
@@ -547,6 +547,12 @@ const validateForm = (finalName) => {
     isValid = false;
   } else if (Number(newIncome.value.amount) <= 0) {
     errors.value.amount = "Le montant doit être supérieur à zéro.";
+    isValid = false;
+  } else if (
+    newIncome.value.amount.toString().includes(".") &&
+    newIncome.value.amount.toString().split(".")[1].length > 2
+  ) {
+    errors.value.amount = "Le montant ne peut pas avoir plus de 2 décimales.";
     isValid = false;
   }
 
