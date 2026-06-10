@@ -159,12 +159,14 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { useCurrencyStore } from "@/stores/currency";
+import { useUiStore } from "@/stores/ui";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 
 const props = defineProps({ show: Boolean });
 const emit = defineEmits(["close", "save"]);
 
 const currencyStore = useCurrencyStore();
+const uiStore = useUiStore();
 
 const amount = ref("");
 const selectedTag = ref("");
@@ -202,6 +204,7 @@ const isFormValid = computed(() => {
 watch(
   () => props.show,
   (isOpen) => {
+    uiStore.isNavBarHidden = isOpen;
     if (isOpen) {
       amount.value = "";
       selectedTag.value = "";

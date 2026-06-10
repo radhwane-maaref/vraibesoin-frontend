@@ -52,9 +52,7 @@
         class="space-y-4 flex-grow flex flex-col"
       >
         <div class="space-y-1">
-          <label class="block text-lg font-medium text-gray-900"
-            >Nom complet</label
-          >
+          <label class="block text-lg font-medium text-gray-900">Nom</label>
           <input
             type="text"
             v-model="formData.full_name"

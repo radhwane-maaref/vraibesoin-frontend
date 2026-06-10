@@ -1,6 +1,7 @@
 <template>
   <nav
-    class="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-100/50 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(0,0,0,0.02)]"
+    class="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-100/50 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
+    :class="uiStore.isNavBarHidden ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'"
   >
     <div class="flex justify-around items-center h-16 max-w-md mx-auto px-2">
       <router-link
@@ -229,5 +230,6 @@
 </template>
 
 <script setup>
-// Vue Router gère toujours l'état active de manière transparente !
+import { useUiStore } from "@/stores/ui";
+const uiStore = useUiStore();
 </script>

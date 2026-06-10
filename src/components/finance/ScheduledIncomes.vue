@@ -380,10 +380,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useFinanceStore } from "@/stores/finance";
 import { useCurrencyStore } from "@/stores/currency";
+import { useUiStore } from "@/stores/ui";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
+
+const uiStore = useUiStore();
 
 const activeSwipeId = ref(null);
 const touchStartX = ref(0);
@@ -422,6 +425,10 @@ const financeStore = useFinanceStore();
 const currencyStore = useCurrencyStore();
 
 const showIncomeModal = ref(false);
+
+watch(showIncomeModal, (isOpen) => {
+  uiStore.isNavBarHidden = isOpen;
+});
 const showDeleteModal = ref(false);
 const incomeToDeleteId = ref(null);
 const isSubmitting = ref(false);
