@@ -292,6 +292,7 @@
 import { ref, reactive, computed, watch } from "vue";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 import { useCurrencyStore } from "@/stores/currency";
+import { useUiStore } from "@/stores/ui";
 
 const props = defineProps({
   show: {
@@ -446,6 +447,7 @@ watch(
 );
 
 const handleClose = () => {
+  useUiStore().isNavBarHidden = false;
   emit("close");
 };
 
@@ -461,6 +463,7 @@ const handleSubmit = () => {
     max_amount: isFixed.value ? null : parseFloat(maxAmount.value),
   };
 
+  useUiStore().isNavBarHidden = false;
   emit("save", payload);
 };
 </script>

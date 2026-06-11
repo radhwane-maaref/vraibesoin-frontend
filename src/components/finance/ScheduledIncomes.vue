@@ -25,13 +25,25 @@
       <h3 class="text-lg sm:text-xl font-semibold text-slate-900">
         Mes revenus
       </h3>
-      <router-link
-        v-if="currentIncomes.length > limit && limit !== null"
-        :to="{ name: 'incomes' }"
-        class="text-xs font-semibold text-black underline underline-offset-2 transition-colors"
+      <button
+        @click="openAddModal"
+        class="flex items-center gap-1.5 px-4 py-2 bg-[#E1EBE8] text-[#5B8C85] rounded-full text-xs font-bold hover:bg-[#d2e2de] transition-colors active:scale-95"
       >
-        Voir tout
-      </router-link>
+        <svg
+          class="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+        Ajouter
+      </button>
     </div>
 
     <div
@@ -139,6 +151,16 @@
           </div>
         </li>
       </transition-group>
+    </div>
+
+    <!-- Voir tout moved to the bottom to match SecuredVault -->
+    <div v-if="currentIncomes.length > limit && limit !== null" class="pt-3 text-center border-t border-gray-100 mt-2">
+      <router-link
+        :to="{ name: 'incomes' }"
+        class="inline-block px-4 py-2 text-[#5B8C85] text-sm font-bold hover:bg-[#F8F6F2] rounded-full transition-colors"
+      >
+        Voir tout
+      </router-link>
     </div>
 
     <div
@@ -468,6 +490,7 @@ const openAddModal = () => {
     frequency: "MONTHLY",
     next_payment_date: todayDate.value,
   };
+  uiStore.isNavBarHidden = true;
   showIncomeModal.value = true;
 };
 defineExpose({ openAddModal });
@@ -487,10 +510,12 @@ const openEditModal = (income) => {
   newIncome.value.frequency = income.frequency;
   newIncome.value.next_payment_date =
     income.next_payment_date || todayDate.value;
+  uiStore.isNavBarHidden = true;
   showIncomeModal.value = true;
 };
 
 const closeModal = () => {
+  uiStore.isNavBarHidden = false;
   showIncomeModal.value = false;
 };
 

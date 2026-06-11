@@ -40,100 +40,15 @@
         />
 
         <ScheduledIncomes key="scheduled-incomes" ref="incomesListRef" />
-
         <SecuredVault
           key="secured-vault"
-          :charges="dashboardData.fixed_charges"
+          :charges="dashboardData.fixed_charges || []"
+          @add-charge="openAddChargeModal"
+          @edit-charge="openEditChargeModal"
           @settle-charge="handleSettleCharge"
         />
 
         <BudgetEnvelopes key="budget-envelopes" />
-
-        <div
-          key="recurring-charges"
-          class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-gray-900">Mes charges</h3>
-              <p class="text-xs text-gray-400 mt-0.5">
-                Vos abonnements, loyers et factures prévus
-              </p>
-            </div>
-            <button
-              @click="openAddChargeModal"
-              class="flex items-center gap-1.5 px-4 py-2 bg-[#E1EBE8] text-[#5B8C85] rounded-full text-xs font-bold hover:bg-[#d2e2de] transition-colors active:scale-95"
-            >
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Ajouter
-            </button>
-          </div>
-
-          <div
-            v-if="
-              dashboardData.fixed_charges &&
-              dashboardData.fixed_charges.length > 0
-            "
-            class="space-y-2.5"
-          >
-            <div
-              v-for="charge in dashboardData.fixed_charges"
-              :key="charge.id"
-              @click="openEditChargeModal(charge)"
-              class="flex items-center justify-between p-4 bg-[#F8F6F2]/50 rounded-2xl border border-gray-50 hover:border-gray-200 cursor-pointer transition-all group"
-            >
-              <div>
-                <p
-                  class="font-bold text-sm text-gray-800 group-hover:text-[#5B8C85] transition-colors"
-                >
-                  {{ charge.name }}
-                </p>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  Échéance :
-                  {{
-                    new Date(charge.due_date).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                    })
-                  }}
-                </p>
-              </div>
-              <div class="text-right">
-                <p class="font-bold text-sm text-gray-900">
-                  <span v-if="charge.is_fixed">
-                    {{ Number(charge.exact_amount).toFixed(2) }}
-                  </span>
-                  <span v-else class="text-xs font-bold text-gray-600">
-                    {{ Number(charge.min_amount).toFixed(0) }}-{{
-                      Number(charge.max_amount).toFixed(0)
-                    }}
-                  </span>
-                  <span class="text-xs font-semibold text-gray-400 ml-1">
-                    {{ currencyStore.currentCurrency.code }}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div v-else class="text-center py-6">
-            <p class="text-sm text-gray-400 font-medium">
-              Aucune charge enregistrée pour le moment.
-            </p>
-          </div>
-        </div>
 
         <SavingsCard
           v-if="dashboardData.savings_goal"
