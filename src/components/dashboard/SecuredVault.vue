@@ -184,7 +184,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
 import { useUiStore } from "@/stores/ui";
 
@@ -208,6 +209,27 @@ const emit = defineEmits(["settle-charge", "add-charge", "edit-charge"]);
 const currencyStore = useCurrencyStore();
 const uiStore = useUiStore();
 
+const localCharges = ref([]);
+
+const fetchCharges = async () => {
+  try {
+    const response = await api.get("/dashboard/summary/");
+    localCharges.value = response.data.fixed_charges || [];
+  } catch (error) {
+    console.error("Erreur lors du chargement des charges dans SecuredVault :", error);
+  }
+};
+
+onMounted(() => {
+  if (!props.charges || props.charges.length === 0) {
+    fetchCharges();
+  }
+});
+
+const displayCharges = computed(() => {
+  return props.charges && props.charges.length > 0 ? props.charges : localCharges.value;
+});
+
 const handleAddCharge = () => {
   uiStore.isNavBarHidden = true;
   emit("add-charge");
@@ -225,7 +247,7 @@ const touchedPayment = ref(false);
 
 // Tri chronologique des charges par Date d'échéance (limité aux `limit` plus récents ajouts)
 const sortedCharges = computed(() => {
-  let list = [...props.charges];
+  let list = [...displayCharges.value];
 
   if (props.limit && props.limit > 0 && list.length > props.limit) {
     // Les plus récemment ajoutés (par id décroissant)
@@ -241,7 +263,7 @@ const sortedCharges = computed(() => {
 
 // Somme globale des fonds bloqués (Montant exact si fixe, Montant max si variable)
 const totalLockedFunds = computed(() => {
-  return props.charges.reduce((sum, charge) => {
+  return displayCharges.value.reduce((sum, charge) => {
     const chargeValue = charge.is_fixed
       ? parseFloat(charge.exact_amount)
       : parseFloat(charge.max_amount);
