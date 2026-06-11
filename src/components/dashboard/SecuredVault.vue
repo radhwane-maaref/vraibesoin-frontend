@@ -48,6 +48,21 @@
       </div>
     </div>
 
+    <!-- Success Message Banner -->
+    <transition
+      enter-active-class="transition ease-out duration-300"
+      enter-from-class="transform opacity-0 -translate-y-2"
+      enter-to-class="transform opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-200"
+      leave-from-class="transform opacity-100 translate-y-0"
+      leave-to-class="transform opacity-0 -translate-y-2"
+    >
+      <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-800 rounded-2xl p-3 flex items-center gap-2 text-xs sm:text-sm font-bold">
+        <span>✅</span>
+        <span>{{ successMessage }}</span>
+      </div>
+    </transition>
+
     <!-- List of charges -->
     <div v-if="sortedCharges.length > 0" class="space-y-3 mt-2">
       <div
@@ -55,7 +70,11 @@
         :key="charge.id"
         class="flex flex-col gap-3 p-4 bg-[#F8F6F2]/50 rounded-2xl border border-gray-50 hover:border-gray-200 transition-all group"
       >
-        <div class="flex items-center justify-between cursor-pointer" @click="handleEditCharge(charge)">
+        <div
+          class="flex items-center justify-between"
+          :class="charge.is_paid ? 'cursor-default' : 'cursor-pointer'"
+          @click="handleEditCharge(charge)"
+        >
           <div>
             <h4 class="font-bold text-sm text-gray-800 group-hover:text-[#5B8C85] transition-colors">
               {{ charge.name }}
@@ -68,7 +87,10 @@
           <div class="flex items-center gap-4">
             <div class="text-right">
               <p class="font-bold text-sm text-gray-900">
-                <span v-if="charge.is_fixed">
+                <span v-if="charge.is_paid">
+                  Montant payé: {{ Number(charge.actual_amount_paid).toFixed(2) }}
+                </span>
+                <span v-else-if="charge.is_fixed">
                   {{ Number(charge.exact_amount).toFixed(2) }}
                 </span>
                 <span v-else class="text-xs font-bold text-gray-600">
@@ -81,7 +103,7 @@
                 }}</span>
               </p>
               <span
-                v-if="!charge.is_fixed"
+                v-if="!charge.is_paid && !charge.is_fixed"
                 class="inline-block text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-500 px-2 py-0.5 rounded-md mt-0.5"
               >
                 Max Sécurisé: {{ Number(charge.max_amount).toFixed(0) }}
@@ -89,6 +111,7 @@
             </div>
 
             <button
+              v-if="!charge.is_paid"
               @click.stop="openPaymentPrompt(charge)"
               class="px-4 py-2 bg-[#E1EBE8] text-[#5A877E] hover:bg-[#d2e2de] text-xs font-bold rounded-full transition-colors active:scale-95"
             >
@@ -184,7 +207,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
 import { useUiStore } from "@/stores/ui";
@@ -210,6 +233,7 @@ const currencyStore = useCurrencyStore();
 const uiStore = useUiStore();
 
 const localCharges = ref([]);
+const successMessage = ref("");
 
 const fetchCharges = async () => {
   try {
@@ -230,12 +254,32 @@ const displayCharges = computed(() => {
   return props.charges && props.charges.length > 0 ? props.charges : localCharges.value;
 });
 
+// Watcher pour détecter quand une charge passe à l'état payé/réglé et afficher le message de succès
+watch(
+  () => displayCharges.value,
+  (newCharges, oldCharges) => {
+    if (oldCharges && oldCharges.length > 0) {
+      const newlyPaid = newCharges.find(
+        (nc) => nc.is_paid && !oldCharges.find((oc) => oc.id === nc.id)?.is_paid
+      );
+      if (newlyPaid) {
+        successMessage.value = `La charge "${newlyPaid.name}" a été réglée avec succès !`;
+        setTimeout(() => {
+          successMessage.value = "";
+        }, 4000);
+      }
+    }
+  },
+  { deep: true }
+);
+
 const handleAddCharge = () => {
   uiStore.isNavBarHidden = true;
   emit("add-charge");
 };
 
 const handleEditCharge = (charge) => {
+  if (charge.is_paid) return;
   uiStore.isNavBarHidden = true;
   emit("edit-charge", charge);
 };
@@ -264,6 +308,7 @@ const sortedCharges = computed(() => {
 // Somme globale des fonds bloqués (Montant exact si fixe, Montant max si variable)
 const totalLockedFunds = computed(() => {
   return displayCharges.value.reduce((sum, charge) => {
+    if (charge.is_paid) return sum;
     const chargeValue = charge.is_fixed
       ? parseFloat(charge.exact_amount)
       : parseFloat(charge.max_amount);
