@@ -83,7 +83,7 @@
           />
         </div>
 
-        <div class="space-y-1">
+        <div v-if="!isGoogleUser" class="space-y-1">
           <label class="block text-lg font-medium text-gray-900"
             >Ancien mot de passe</label
           >
@@ -106,7 +106,7 @@
           </p>
         </div>
 
-        <div class="space-y-1">
+        <div v-if="!isGoogleUser" class="space-y-1">
           <label class="block text-lg font-medium text-gray-900"
             >Nouveau mot de passe</label
           >
@@ -154,7 +154,7 @@
           </p>
         </div>
 
-        <div class="space-y-1">
+        <div v-if="!isGoogleUser" class="space-y-1">
           <label class="block text-lg font-medium text-gray-900"
             >Confirmer nouveau mot de passe</label
           >
@@ -237,6 +237,7 @@ const authStore = useAuthStore();
 const isSaving = ref(false);
 const currencyStore = useCurrencyStore();
 
+const isGoogleUser = computed(() => authStore.user?.auth_provider === "GOOGLE");
 const showSuccessMessage = ref(false);
 
 const formData = reactive({
