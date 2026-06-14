@@ -45,6 +45,12 @@
             >
               Question {{ activeQuestionIndex + 1 }} sur 3
             </span>
+            <span
+              v-if="intentionData.product_price"
+              class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider"
+            >
+              {{ intentionData.product_price }} {{ currencyStore.currentCurrency.code }}
+            </span>
           </div>
           <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
