@@ -274,11 +274,11 @@
           <div
             v-for="item in paginatedHistory"
             :key="item.id"
-            class="premium-card flex items-center justify-between group transition-transform hover:-translate-y-0.5"
+            class="premium-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 group transition-transform hover:-translate-y-0.5"
           >
-            <div class="pr-3">
+            <div class="pr-0 sm:pr-3 w-full sm:w-auto">
               <h3
-                class="text-[15px] font-bold text-[#000000] truncate max-w-[180px] sm:max-w-xs"
+                class="text-[15px] font-bold text-[#000000] truncate w-full sm:max-w-xs"
               >
                 {{ item.name }}
               </h3>
@@ -295,7 +295,7 @@
                 >
               </p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
               <button
                 @click.stop="openVerdictModal(item)"
                 class="text-[#9CA3AF] hover:text-[#5B8C85] transition-colors p-1"
