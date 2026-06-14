@@ -375,34 +375,82 @@
 </template>
 
 <script setup>
+/**
+ * @module ManagingUser
+ * @description Vue d'administration pour la gestion des utilisateurs et la consultation des avis.
+ *
+ * Deux onglets principaux :
+ * - **Utilisateurs inscrits** : liste paginée avec recherche, activation/désactivation
+ *   de comptes (soft delete / restore) et réinitialisation de mot de passe
+ *   (uniquement pour les comptes authentifiés par e-mail).
+ * - **Avis des utilisateurs** : liste en lecture seule des tickets de support
+ *   soumis par les utilisateurs, avec notation par étoiles.
+ *
+ * Toutes les actions critiques (désactivation, changement de mot de passe) passent
+ * par une modale de confirmation avant exécution.
+ *
+ * @requires vue - ref, onMounted, reactive
+ * @requires @/services/api - Client HTTP configuré (axios)
+ */
 import { ref, onMounted, reactive } from "vue";
 import api from "@/services/api";
 
+/** @type {import('vue').Ref<'users'|'messages'>} Onglet actuellement actif */
 const activeTab = ref("users");
 
-// État des utilisateurs
+/* ── État : liste des utilisateurs ────────────────────────── */
+
+/** @type {import('vue').Ref<Array<Object>>} Liste des utilisateurs récupérés depuis l'API */
 const users = ref([]);
+
+/** @type {import('vue').Ref<string>} Terme de recherche saisi par l'administrateur */
 const searchQuery = ref("");
+
+/** @type {import('vue').Ref<boolean>} Indicateur de chargement de la liste utilisateurs */
 const loadingUsers = ref(false);
+
+/** @type {number|null} Identifiant du timer de debounce pour la recherche */
 let searchTimeout = null;
 
-// État des messages (feedbacks)
+/* ── État : avis utilisateurs (feedbacks) ─────────────────── */
+
+/** @type {import('vue').Ref<Array<Object>>} Liste des tickets de support / avis */
 const feedbacks = ref([]);
+
+/** @type {import('vue').Ref<boolean>} Indicateur de chargement des avis */
 const loadingMessages = ref(false);
 
-// État de la Modale de Mot de passe
+/* ── État : modale de changement de mot de passe ──────────── */
+
+/** @type {import('vue').Ref<boolean>} Contrôle l'affichage de la modale de mot de passe */
 const showPasswordModal = ref(false);
+
+/** @type {import('vue').Ref<Object|null>} Utilisateur sélectionné pour le changement de mot de passe */
 const selectedUser = ref(null);
+
+/** @type {import('vue').Ref<string>} Nouveau mot de passe saisi dans la modale */
 const newPassword = ref("");
+
+/** @type {import('vue').Ref<boolean>} Verrouillage du bouton pendant la soumission du mot de passe */
 const isSubmittingPwd = ref(false);
 
-// ---- NOUVEAU : Système de Toast (Alerte) ----
+/* ── Système de notifications toast ──────────────────────── */
+
+/**
+ * État réactif du toast de notification.
+ * @type {{show: boolean, message: string, type: 'success'|'error'}}
+ */
 const toast = reactive({
   show: false,
   message: "",
-  type: "success", // 'success' ou 'error'
+  type: "success",
 });
 
+/**
+ * Affiche un toast de notification pendant 3 secondes.
+ * @param {string} message - Texte à afficher.
+ * @param {'success'|'error'} [type='success'] - Type visuel du toast.
+ */
 const showToast = (message, type = "success") => {
   toast.message = message;
   toast.type = type;
@@ -412,12 +460,26 @@ const showToast = (message, type = "success") => {
   }, 3000);
 };
 
-// ---- NOUVEAU : Système de Modal de Confirmation ----
+/* ── Système de modale de confirmation générique ──────────── */
+
+/** @type {import('vue').Ref<boolean>} Contrôle l'affichage de la modale de confirmation */
 const showConfirmModal = ref(false);
+
+/** @type {import('vue').Ref<string>} Titre affiché dans la modale */
 const confirmTitle = ref("");
+
+/** @type {import('vue').Ref<string>} Message descriptif dans la modale */
 const confirmMessage = ref("");
+
+/** @type {Function|null} Callback exécuté si l'utilisateur confirme l'action */
 let confirmActionCallback = null;
 
+/**
+ * Ouvre la modale de confirmation avec un titre, un message et un callback d'action.
+ * @param {string} title - Titre de la modale.
+ * @param {string} message - Description de l'action à confirmer.
+ * @param {Function} callback - Fonction asynchrone exécutée à la confirmation.
+ */
 const requestConfirmation = (title, message, callback) => {
   confirmTitle.value = title;
   confirmMessage.value = message;
@@ -425,11 +487,17 @@ const requestConfirmation = (title, message, callback) => {
   showConfirmModal.value = true;
 };
 
+/** Ferme la modale de confirmation sans exécuter l'action */
 const cancelConfirmation = () => {
   showConfirmModal.value = false;
   confirmActionCallback = null;
 };
 
+/**
+ * Ferme la modale et exécute le callback de confirmation s'il existe.
+ * @async
+ * @returns {Promise<void>}
+ */
 const executeConfirmation = async () => {
   showConfirmModal.value = false;
   if (confirmActionCallback) {
@@ -438,7 +506,13 @@ const executeConfirmation = async () => {
   }
 };
 
-// Récupération des données
+/* ── Récupération des données ─────────────────────────────── */
+
+/**
+ * Récupère la liste des utilisateurs depuis l'API admin, filtrée par le terme de recherche courant.
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchUsers = async () => {
   loadingUsers.value = true;
   try {
@@ -453,6 +527,11 @@ const fetchUsers = async () => {
   }
 };
 
+/**
+ * Récupère la liste complète des avis / tickets de support.
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchFeedbacks = async () => {
   loadingMessages.value = true;
   try {
@@ -465,6 +544,10 @@ const fetchFeedbacks = async () => {
   }
 };
 
+/**
+ * Temporise la recherche utilisateur pour éviter un appel API à chaque frappe.
+ * Délai de 400 ms avant déclenchement de `fetchUsers`.
+ */
 const debounceSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
@@ -472,7 +555,11 @@ const debounceSearch = () => {
   }, 400);
 };
 
-// ---- MODIFIÉ : Utilise la nouvelle Modal de Confirmation ----
+/**
+ * Ouvre la modale de confirmation avant d'activer ou désactiver un compte utilisateur.
+ * L'action effective (soft_delete / restore) est exécutée via `PATCH /admin-api/users/:id/`.
+ * @param {Object} user - Objet utilisateur ciblé (doit contenir `id` et `is_active`).
+ */
 const initiateToggleUserStatus = (user) => {
   const actionText = user.is_active ? "désactiver" : "restaurer";
 
@@ -495,13 +582,22 @@ const initiateToggleUserStatus = (user) => {
   );
 };
 
+/**
+ * Prépare et ouvre la modale de changement de mot de passe pour un utilisateur donné.
+ * @param {Object} user - Objet utilisateur ciblé.
+ */
 const openPasswordModal = (user) => {
   selectedUser.value = user;
   newPassword.value = "";
   showPasswordModal.value = true;
 };
 
-// ---- MODIFIÉ : Utilise le nouveau Toast ----
+/**
+ * Soumet le changement de mot de passe via `PATCH /admin-api/users/:id/`.
+ * Affiche un toast de succès ou d'erreur selon le résultat.
+ * @async
+ * @returns {Promise<void>}
+ */
 const submitPasswordChange = async () => {
   isSubmittingPwd.value = true;
   try {
@@ -521,6 +617,11 @@ const submitPasswordChange = async () => {
   }
 };
 
+/**
+ * Formate une date ISO en chaîne lisible selon la locale française.
+ * @param {string|null|undefined} dateString - Date au format ISO 8601.
+ * @returns {string} Date formatée (ex. « 14 juin 2026, 17:30 ») ou « - » si absente.
+ */
 const formatDate = (dateString) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
@@ -533,6 +634,7 @@ const formatDate = (dateString) => {
   });
 };
 
+/* ── Chargement initial des deux onglets au montage ────────── */
 onMounted(() => {
   fetchUsers();
   fetchFeedbacks();
@@ -555,7 +657,7 @@ onMounted(() => {
   }
 }
 
-/* Animations du Toast */
+/* Transitions d'apparition du toast */
 .toast-fade-enter-active,
 .toast-fade-leave-active {
   transition: all 0.3s ease;
@@ -566,7 +668,7 @@ onMounted(() => {
   transform: translateY(20px);
 }
 
-/* Cache discrètement la scrollbar pour les onglets sur mobile */
+/* Masque la scrollbar des onglets sur mobile tout en conservant le défilement */
 .custom-scrollbar::-webkit-scrollbar {
   display: none;
 }

@@ -223,6 +223,29 @@
 </template>
 
 <script setup>
+/**
+ * @module EditProfile
+ * @description Formulaire d'édition du profil utilisateur.
+ *
+ * Permet de modifier :
+ * - Le nom complet (validé entre 3 et 50 caractères, sans chiffres).
+ * - Le mot de passe (ancien + nouveau + confirmation), uniquement pour les comptes
+ *   authentifiés par e-mail (masqué pour les comptes Google OAuth).
+ * - La date de naissance.
+ * - Les catégories socio-professionnelles et les objectifs financiers
+ *   (via les composants dédiés `SocioProSelect` et `FinancialGoalSelect`).
+ *
+ * Les modifications sont persistées via `PATCH /users/me/` puis le profil
+ * est re-synchronisé dans le store d'authentification.
+ *
+ * @requires vue - reactive, ref, onMounted, computed
+ * @requires vue-router - useRouter
+ * @requires @/stores/auth - Store Pinia d'authentification (useAuthStore)
+ * @requires @/stores/currency - Store Pinia des devises (useCurrencyStore)
+ * @requires @/services/api - Client HTTP configuré (axios)
+ * @requires @/components/shared/SocioProSelect.vue - Sélecteur de catégories socio-professionnelles
+ * @requires @/components/shared/FinancialGoalSelect.vue - Sélecteur d'objectifs financiers
+ */
 import { reactive, ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -234,12 +257,23 @@ import FinancialGoalSelect from "@/components/shared/FinancialGoalSelect.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+/** @type {import('vue').Ref<boolean>} Verrouillage du bouton pendant la soumission */
 const isSaving = ref(false);
 const currencyStore = useCurrencyStore();
 
+/** @type {import('vue').ComputedRef<boolean>} Vrai si le compte utilise l'authentification Google (pas de mot de passe modifiable) */
 const isGoogleUser = computed(() => authStore.user?.auth_provider === "GOOGLE");
+
+/** @type {import('vue').Ref<boolean>} Contrôle l'affichage du toast de succès après sauvegarde */
 const showSuccessMessage = ref(false);
 
+/**
+ * État réactif du formulaire de profil.
+ * Les valeurs par défaut des champs multi-sélection correspondent aux options
+ * « non répondu », écrasées au montage si le profil contient des données.
+ * @type {{full_name: string, email: string, old_password: string, new_password: string, confirm_password: string, birth_date: string, financial_goals: string[], socio_professional_categories: string[]}}
+ */
 const formData = reactive({
   full_name: "",
   email: "",
@@ -252,6 +286,7 @@ const formData = reactive({
   socio_professional_categories: ["Préfère ne pas répondre"],
 });
 
+/** @type {Object} Messages d'erreur de validation par champ (null = valide) */
 const errors = reactive({
   full_name: null,
   old_password: null,
@@ -263,6 +298,11 @@ const errors = reactive({
   socio_professional_categories: null,
 });
 
+/**
+ * Pré-remplit le formulaire avec les données du profil stockées dans le store.
+ * Gère la rétro-compatibilité du champ `financial_goal` (singulier, ancien format)
+ * vers `financial_goals` (tableau, nouveau format) avec dédoublonnage.
+ */
 onMounted(() => {
   if (authStore.user) {
     formData.full_name = authStore.user.full_name || "";
@@ -288,6 +328,12 @@ onMounted(() => {
   }
 });
 
+/**
+ * Évalue la robustesse du mot de passe saisi selon 4 critères indépendants
+ * (longueur ≥ 8, majuscule, chiffre, caractère spécial), chacun valant 25 points.
+ *
+ * @type {import('vue').ComputedRef<{percent: number, color: string, textColor: string, label: string}>}
+ */
 const passwordStrength = computed(() => {
   const pwd = formData.new_password;
   if (!pwd)
@@ -333,6 +379,11 @@ const passwordStrength = computed(() => {
   };
 });
 
+/**
+ * Gestionnaire de saisie spécifique au champ « nouveau mot de passe ».
+ * Valide également le champ de confirmation s'il est déjà renseigné,
+ * pour maintenir la cohérence des messages d'erreur en temps réel.
+ */
 const handlePasswordInput = () => {
   validateField("new_password");
   if (formData.confirm_password) {
@@ -340,6 +391,18 @@ const handlePasswordInput = () => {
   }
 };
 
+/**
+ * Valide un champ spécifique du formulaire et met à jour l'objet `errors`.
+ *
+ * Règles appliquées par champ :
+ * - `full_name` : 3–50 caractères, sans chiffres.
+ * - `birth_date` : ne doit pas être dans le futur.
+ * - `financial_goals` / `socio_professional_categories` : au moins une sélection.
+ * - `new_password` : minimum 8 caractères.
+ * - `confirm_password` : doit correspondre à `new_password`.
+ *
+ * @param {string} field - Nom du champ à valider.
+ */
 const validateField = (field) => {
   if (field === "full_name") {
     const nameLength = formData.full_name.trim().length;
@@ -400,6 +463,22 @@ const validateField = (field) => {
   }
 };
 
+/**
+ * Soumet les modifications du profil à l'API.
+ *
+ * Flux de traitement :
+ * 1. Validation complète de tous les champs (abandon si erreur).
+ * 2. Découpage du nom complet en `first_name` / `last_name` pour correspondre
+ *    au schéma attendu par le backend.
+ * 3. Inclusion conditionnelle des champs de mot de passe (seulement si renseignés).
+ * 4. Après succès : re-synchronisation du store, réinitialisation des champs
+ *    sensibles et affichage d'un toast de confirmation (3 s).
+ * 5. En cas d'erreur 400 : mapping des erreurs serveur vers l'objet `errors`
+ *    pour affichage inline sous chaque champ concerné.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const handleSubmit = async () => {
   validateField("full_name");
   validateField("birth_date");

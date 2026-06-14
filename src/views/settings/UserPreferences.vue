@@ -220,6 +220,28 @@
 </template>
 
 <script setup>
+/**
+ * @module UserPreferences
+ * @description Page de configuration des préférences utilisateur.
+ *
+ * Trois sections indépendantes, chacune persistée en temps réel via `PATCH /users/me/` :
+ * - **Période de réflexion** : durée de cooldown imposée avant validation d'un achat
+ *   impulsif (12 h, 24 h, 48 h ou 72 h).
+ * - **Configuration** : sélection de la devise d'affichage et du niveau de rigueur
+ *   d'évaluation IA (« Indulgent », « Équilibré », « Impitoyable »).
+ * - **Notifications** : activation/désactivation de l'alerte e-mail de fin
+ *   de période de réflexion.
+ *
+ * Chaque préférence est synchronisée de manière bidirectionnelle avec le store
+ * d'authentification via un couple de watchers (store → UI au montage,
+ * UI → API au changement).
+ *
+ * @requires vue - computed, ref, watch
+ * @requires @/stores/currency - Store Pinia de gestion des devises (useCurrencyStore)
+ * @requires @/stores/auth - Store Pinia d'authentification (useAuthStore)
+ * @requires @/services/api - Client HTTP configuré (axios)
+ * @requires @/components/shared/SettingsPageHeader.vue - En-tête réutilisable des pages paramètres
+ */
 import { computed, ref, watch } from "vue";
 import { useCurrencyStore } from "@/stores/currency";
 import { useAuthStore } from "@/stores/auth";
@@ -228,10 +250,18 @@ import SettingsPageHeader from "@/components/shared/SettingsPageHeader.vue";
 
 const authStore = useAuthStore();
 
+/* ── Section : Période de réflexion ────────────────────────── */
+
+/** @type {string[]} Libellés affichés sous le curseur du slider */
 const labels = ["12h", "24h", "48h", "72h"];
+
+/** @type {number[]} Valeurs en heures correspondant à chaque position du slider */
 const periodValues = [12, 24, 48, 72];
+
+/** @type {import('vue').Ref<number>} Index courant du slider (0–3) */
 const periodIndex = ref(1);
 
+/** Synchronise le slider avec la préférence stockée dans le profil au montage */
 watch(
   () => authStore.user?.cooldown_preference,
   (newVal) => {
@@ -245,6 +275,7 @@ watch(
   { immediate: true },
 );
 
+/** Persiste la période de réflexion dès que le slider change, sauf si la valeur est déjà identique */
 watch(periodIndex, async (newIndex) => {
   const selectedHours = periodValues[newIndex];
   if (authStore.user?.cooldown_preference === selectedHours) return;
@@ -259,20 +290,41 @@ watch(periodIndex, async (newIndex) => {
   }
 });
 
+/* ── Section : Sélecteur de devise ──────────────────────────── */
+
+/** @type {import('vue').Ref<boolean>} Contrôle l'ouverture du dropdown de devises */
 const isDropdownOpen = ref(false);
 const currencyStore = useCurrencyStore();
+
+/** @type {Array<{code: string, name: string, countryCode: string}>} Liste des devises disponibles */
 const currencies = currencyStore.availableCurrencies;
+
+/** @type {import('vue').ComputedRef<{code: string, name: string, countryCode: string}>} Devise actuellement sélectionnée */
 const selectedCurrency = computed(() => currencyStore.currentCurrency);
 
+/**
+ * Sélectionne une devise, la persiste dans le store et ferme le dropdown.
+ * @param {{code: string, name: string, countryCode: string}} currency - Devise choisie.
+ */
 const selectCurrency = (currency) => {
   currencyStore.setCurrency(currency);
   isDropdownOpen.value = false;
 };
 
+/* ── Section : Niveau de rigueur d'évaluation IA ────────────── */
+
+/** @type {string[]} Niveaux de rigueur disponibles */
 const rigueurLevels = ["Indulgent", "Équilibré", "Impitoyable"];
+
+/** @type {import('vue').Ref<string>} Niveau de rigueur actuellement sélectionné */
 const selectedRigueur = ref("Équilibré");
 
+/* ── Section : Notifications de fin de période ──────────────── */
+
+/** @type {import('vue').Ref<boolean>} État du toggle de notification e-mail */
 const notificationsEnabled = ref(true);
+
+/** Synchronise le toggle avec la préférence stockée dans le profil au montage */
 watch(
   () => authStore.user?.wants_cooldown_reminders,
   (newVal) => {
@@ -283,6 +335,11 @@ watch(
   { immediate: true },
 );
 
+/**
+ * Persiste la préférence de notification dès que le toggle change.
+ * En cas d'échec réseau, restaure la valeur précédente pour éviter
+ * une désynchronisation entre l'UI et le serveur.
+ */
 watch(notificationsEnabled, async (newVal) => {
   if (authStore.user?.wants_cooldown_reminders === newVal) return;
 
@@ -300,6 +357,7 @@ watch(notificationsEnabled, async (newVal) => {
   }
 });
 
+/** Synchronise le niveau de rigueur avec la préférence stockée dans le profil au montage */
 watch(
   () => authStore.user?.evaluation_rigor,
   (newVal) => {
@@ -312,6 +370,7 @@ watch(
   { immediate: true },
 );
 
+/** Persiste le niveau de rigueur dès que la sélection change */
 watch(selectedRigueur, async (newVal) => {
   if (authStore.user?.evaluation_rigor === newVal) return;
   try {

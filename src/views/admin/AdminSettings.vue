@@ -1,7 +1,5 @@
 <template>
-  <!-- Ajout de flex et justify-center pour centrer le contenu sur PC -->
   <div class="min-h-screen bg-[#F8F6F2] font-sans pb-24 flex justify-center">
-    <!-- Conteneur central avec une largeur maximale (max-w-3xl) -->
     <div class="w-full max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
       <header class="flex items-center justify-between mb-8 relative">
         <h1 class="absolute w-full text-center text-xl font-bold text-gray-900">
@@ -10,7 +8,6 @@
       </header>
 
       <div class="space-y-4 sm:space-y-6">
-        <!-- Section Sécurité : Mot de passe -->
         <section
           class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100"
         >
@@ -38,7 +35,6 @@
           </div>
 
           <form @submit.prevent="updatePassword" class="space-y-4">
-            <!-- Messages de retour -->
             <div
               v-if="successMessage"
               class="p-3.5 sm:p-4 bg-green-50 text-green-700 rounded-xl text-sm font-medium animate-fade-in"
@@ -53,7 +49,6 @@
               {{ errorMessage }}
             </div>
 
-            <!-- Ancien mot de passe -->
             <div class="space-y-1.5">
               <label class="block text-xs sm:text-sm font-bold text-gray-700"
                 >Ancien mot de passe</label
@@ -67,7 +62,6 @@
               />
             </div>
 
-            <!-- Nouveaux mots de passe (Grille responsive) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
                 <label class="block text-xs sm:text-sm font-bold text-gray-700"
@@ -96,7 +90,6 @@
               </div>
             </div>
 
-            <!-- Bouton de soumission responsive -->
             <div class="pt-4 flex flex-col sm:flex-row sm:justify-end">
               <button
                 type="submit"
@@ -129,8 +122,6 @@
           </form>
         </section>
 
-        <!-- Section Session : Déconnexion -->
-
         <button
           @click="handleLogout"
           class="w-full sm:w-auto mx-auto px-6 py-3.5 sm:py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all flex justify-center items-center gap-2 shadow-sm"
@@ -156,6 +147,21 @@
 </template>
 
 <script setup>
+/**
+ * @module AdminSettings
+ * @description Page de paramètres du compte administrateur.
+ *
+ * Propose deux actions principales :
+ * - **Modification du mot de passe** : formulaire sécurisé avec validation
+ *   côté client (longueur minimale, concordance) et soumission via `PATCH /users/me/`.
+ * - **Déconnexion** : purge de la session via le store d'authentification
+ *   et redirection vers la page de connexion.
+ *
+ * @requires vue - ref, reactive, computed
+ * @requires vue-router - useRouter
+ * @requires @/stores/auth - Store Pinia d'authentification (useAuthStore)
+ * @requires @/services/api - Client HTTP configuré (axios)
+ */
 import { ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
@@ -164,16 +170,31 @@ import api from "@/services/api";
 const router = useRouter();
 const authStore = useAuthStore();
 
+/** @type {import('vue').Ref<boolean>} Verrouillage du formulaire pendant la requête réseau */
 const isLoading = ref(false);
+
+/** @type {import('vue').Ref<string>} Message de confirmation affiché temporairement après succès */
 const successMessage = ref("");
+
+/** @type {import('vue').Ref<string>} Message d'erreur retourné par l'API ou la validation locale */
 const errorMessage = ref("");
 
+/**
+ * @type {{current_password: string, new_password: string, confirm_password: string}}
+ * État réactif du formulaire de changement de mot de passe.
+ */
 const pwdForm = reactive({
   current_password: "",
   new_password: "",
   confirm_password: "",
 });
 
+/**
+ * Détermine si le formulaire est prêt à être soumis.
+ * Vérifie que l'ancien mot de passe est renseigné, que le nouveau
+ * atteint 8 caractères minimum et que la confirmation correspond.
+ * @type {import('vue').ComputedRef<boolean>}
+ */
 const isPasswordValid = computed(() => {
   return (
     pwdForm.current_password.length > 0 &&
@@ -182,6 +203,16 @@ const isPasswordValid = computed(() => {
   );
 });
 
+/**
+ * Soumet la demande de changement de mot de passe à l'API.
+ *
+ * Effectue une double vérification de concordance côté client avant l'appel réseau.
+ * En cas de succès, réinitialise le formulaire et affiche un message de confirmation
+ * qui disparaît automatiquement après 4 secondes.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const updatePassword = async () => {
   errorMessage.value = "";
   successMessage.value = "";
@@ -216,6 +247,10 @@ const updatePassword = async () => {
   }
 };
 
+/**
+ * Déconnecte l'administrateur en purgeant le store d'authentification
+ * puis redirige vers la route nommée « login ».
+ */
 const handleLogout = () => {
   authStore.logout();
   router.push({ name: "login" });

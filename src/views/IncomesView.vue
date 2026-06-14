@@ -27,7 +27,6 @@
         </h1>
       </div>
 
-      <!-- Filtres -->
       <div
         class="premium-card bg-white rounded-2xl p-4 mb-5 shadow-sm border border-gray-100"
       >
@@ -112,6 +111,21 @@
 </template>
 
 <script setup>
+/**
+ * @module IncomesView
+ * @description Vue dédiée à la consultation de l'ensemble des revenus.
+ *
+ * Fonctionnalités principales :
+ * - **Filtrage multicritères** : fréquence, type (nom), montant minimal et maximal.
+ * - **Scroll infini** : pagination dynamique des résultats (par tranches de 10)
+ *   pour optimiser les performances de rendu.
+ * - **Affichage** : délègue le rendu final à `ScheduledIncomes`.
+ *
+ * @requires vue - ref, computed, onMounted, onUnmounted, watch
+ * @requires @/stores/finance - Store Pinia gérant les revenus (`incomes`)
+ * @requires @/components/finance/ScheduledIncomes.vue - Composant liste
+ * @requires @/components/shared/CustomSelect.vue - Composant de filtre
+ */
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useFinanceStore } from "@/stores/finance";
 import ScheduledIncomes from "@/components/finance/ScheduledIncomes.vue";
@@ -119,6 +133,10 @@ import CustomSelect from "@/components/shared/CustomSelect.vue";
 
 const financeStore = useFinanceStore();
 
+/**
+ * Critères de filtrage actifs.
+ * @type {import('vue').Ref<{frequency: string, type: string, minAmount: number|null, maxAmount: number|null}>}
+ */
 const filters = ref({
   frequency: "",
   type: "",
@@ -126,9 +144,12 @@ const filters = ref({
   maxAmount: null,
 });
 
+/** @type {import('vue').Ref<number>} Nombre de revenus affichés actuellement (scroll infini) */
 const visibleCount = ref(10);
 
-// Reset visible count when filters change
+/**
+ * Réinitialise la pagination à 10 éléments dès qu'un filtre est modifié.
+ */
 watch(
   filters,
   () => {
@@ -137,10 +158,16 @@ watch(
   { deep: true },
 );
 
+/**
+ * Extrait les noms uniques des revenus pour alimenter le filtre "Type".
+ * @type {import('vue').ComputedRef<string[]>}
+ */
 const uniqueTypes = computed(() => {
   const types = financeStore.incomes.map((inc) => inc.name);
   return [...new Set(types)].filter(Boolean);
 });
+
+/** @type {Array<{value: string, label: string}>} Options statiques du filtre de fréquence */
 
 const frequencyOptions = [
   { value: "", label: "Toutes" },
@@ -151,6 +178,10 @@ const frequencyOptions = [
   { value: "YEARLY", label: "Annuel" },
 ];
 
+/**
+ * Options dynamiques du filtre "Type", incluant l'option par défaut "Tous".
+ * @type {import('vue').ComputedRef<Array<{value: string, label: string}>>}
+ */
 const typeOptions = computed(() => {
   return [
     { value: "", label: "Tous" },
@@ -158,6 +189,10 @@ const typeOptions = computed(() => {
   ];
 });
 
+/**
+ * Liste filtrée des revenus en fonction des critères sélectionnés par l'utilisateur.
+ * @type {import('vue').ComputedRef<Array<Object>>}
+ */
 const filteredIncomes = computed(() => {
   return financeStore.incomes.filter((inc) => {
     let match = true;
@@ -187,6 +222,11 @@ const filteredIncomes = computed(() => {
   });
 });
 
+/**
+ * Gestionnaire d'événement de défilement (Scroll Infini).
+ * Ajoute 10 éléments supplémentaires à `visibleCount` lorsque l'utilisateur
+ * approche du bas de la page (marge de 100px).
+ */
 const handleScroll = () => {
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
   if (scrollTop + clientHeight >= scrollHeight - 100) {
@@ -196,6 +236,11 @@ const handleScroll = () => {
   }
 };
 
+/**
+ * Montage : récupère les données si elles ne sont pas déjà en store,
+ * et attache l'écouteur de défilement pour le scroll infini.
+ */
+
 onMounted(() => {
   if (financeStore.incomes.length === 0) {
     financeStore.fetchFinanceData();
@@ -203,6 +248,7 @@ onMounted(() => {
   window.addEventListener("scroll", handleScroll);
 });
 
+/** Démontage : nettoyage indispensable de l'écouteur de défilement global */
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });

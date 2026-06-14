@@ -789,6 +789,26 @@
 </template>
 
 <script setup>
+/**
+ * @module AdminDashboard
+ * @description Tableau de bord d'administration de la plateforme VraiBesoin.
+ *
+ * Ce composant agrège et affiche les indicateurs clés de performance (KPI) :
+ * - **Total économisé** : somme monétaire des achats impulsifs évités par les utilisateurs.
+ * - **Taux de résistance** : proportion d'intentions d'achat finalement abandonnées.
+ * - **Répartition par catégorie** : distribution des analyses IA par catégorie de produit (graphique en anneau).
+ * - **Bypass IA** : fréquence à laquelle les utilisateurs ignorent les alertes d'incohérence de l'IA.
+ * - **Verdict IA vs Décision finale** : confrontation entre la recommandation algorithmique et le choix effectif.
+ *
+ * Chaque section dispose de son propre filtre temporel indépendant (jour, semaine, mois, année, total).
+ * Les données sont récupérées via l'API admin (`/admin-api/stats/` et `/admin-api/stats/categories/`).
+ *
+ * @requires vue - ref, onMounted, computed, watch
+ * @requires @/services/api - Client HTTP configuré (axios)
+ * @requires @/components/shared/CustomSelect.vue - Sélecteur personnalisé réutilisable
+ * @requires vue-chartjs - Composant Pie pour le graphique en anneau
+ * @requires chart.js - Bibliothèque de graphiques (Title, Tooltip, Legend, ArcElement)
+ */
 import { ref, onMounted, computed, watch } from "vue";
 import api from "@/services/api";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
@@ -800,6 +820,7 @@ ChartJS.register(Title, Tooltip, Legend, ArcElement);
 const showBypassSheet = ref(false);
 const showBottomSheet = ref(false);
 
+/** @type {Array<{value: string, label: string}>} Options de filtrage temporel partagées par toutes les sections */
 const periodOptions = [
   { value: "day", label: "Aujourd'hui" },
   { value: "week", label: "Cette semaine" },
@@ -808,12 +829,14 @@ const periodOptions = [
   { value: "total", label: "Total" },
 ];
 
+/** @type {Array<{value: string, label: string}>} Options de limitation du nombre de catégories affichées */
 const topNOptions = [
   { value: "5", label: "Top 5" },
   { value: "7", label: "Top 7" },
   { value: "10", label: "Top 10" },
 ];
 
+/** @type {string[]} Palette de couleurs cyclique pour le graphique par catégorie (20 teintes distinctes) */
 const categoryColors = [
   "#5B8C85",
   "#FCD34D",
@@ -837,23 +860,44 @@ const categoryColors = [
   "#9CA3AF",
 ];
 
-// Formatting Helpers
+/**
+ * Formate un nombre selon la locale française (séparateur de milliers : espace).
+ * @param {number|null|undefined} num - Valeur numérique à formater.
+ * @returns {string} Nombre formaté (ex. « 12 345 »).
+ */
 const formatNumber = (num) => new Intl.NumberFormat("fr-FR").format(num || 0);
+
+/**
+ * Sépare un montant en sa partie numérique formatée et son unité monétaire.
+ * @param {number|string|null|undefined} val - Montant brut.
+ * @returns {{value: string, unit: string}} Objet contenant la valeur formatée et l'unité « TND ».
+ */
 const splitCurrency = (val) => {
   const formatted = new Intl.NumberFormat("fr-FR", {
     minimumFractionDigits: 2,
   }).format(Number(val || 0));
   return { value: formatted, unit: "TND" };
 };
+
+/**
+ * Retourne la couleur associée à un index de catégorie (accès cyclique dans la palette).
+ * @param {number} idx - Index de la catégorie.
+ * @returns {string} Code couleur hexadécimal.
+ */
 const getCategoryColor = (idx) => categoryColors[idx % categoryColors.length];
 
-// ==============================================
-// 1A. Local State: Total Saved
-// ==============================================
+/* ── Section : Total Économisé ────────────────────────────── */
+
 const periodTotalSaved = ref("total");
 const dataTotalSaved = ref(null);
 const loadingTotalSaved = ref(false);
 
+/**
+ * Récupère le montant total économisé sur la période sélectionnée.
+ * Alimente `dataTotalSaved` avec la propriété `global_impact` de la réponse API.
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchTotalSaved = async () => {
   loadingTotalSaved.value = true;
   try {
@@ -868,6 +912,11 @@ const fetchTotalSaved = async () => {
   }
 };
 
+/**
+ * Calcule la moyenne journalière d'économies sur la période courante.
+ * Retourne `null` pour les périodes « total » et « day » où le calcul n'est pas pertinent.
+ * @type {import('vue').ComputedRef<string|null>}
+ */
 const dailyAverage = computed(() => {
   if (
     !dataTotalSaved.value?.total_saved ||
@@ -891,13 +940,18 @@ const dailyAverage = computed(() => {
   );
 });
 
-// ==============================================
-// 1B. Local State: Mastery Ratio
-// ==============================================
+/* ── Section : Taux de Résistance ─────────────────────────── */
+
 const periodMasteryRatio = ref("total");
 const dataMasteryRatio = ref(null);
 const loadingMasteryRatio = ref(false);
 
+/**
+ * Récupère le taux de résistance (mastery ratio) sur la période sélectionnée.
+ * Le ratio représente le pourcentage d'intentions d'achat finalement abandonnées.
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchMasteryRatio = async () => {
   loadingMasteryRatio.value = true;
   try {
@@ -912,14 +966,19 @@ const fetchMasteryRatio = async () => {
   }
 };
 
-// ==============================================
-// 2. Local State: Categories
-// ==============================================
+/* ── Section : Répartition par Catégorie ──────────────────── */
+
 const periodCategory = ref("total");
 const topNCategory = ref("7");
 const dataCategory = ref(null);
 const loadingCategory = ref(false);
 
+/**
+ * Récupère la répartition des analyses par catégorie de produit.
+ * Le paramètre `top_n` limite le nombre de catégories retournées ; le reste est agrégé sous « Autres ».
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchCategory = async () => {
   loadingCategory.value = true;
   try {
@@ -934,6 +993,11 @@ const fetchCategory = async () => {
   }
 };
 
+/**
+ * Construit la structure de données attendue par Chart.js pour le graphique en anneau.
+ * Ajoute dynamiquement le segment « Autres » lorsque des catégories résiduelles existent.
+ * @type {import('vue').ComputedRef<{labels: string[], datasets: Object[]}>}
+ */
 const categoryChartData = computed(() => {
   if (!dataCategory.value || dataCategory.value.total === 0)
     return { labels: [], datasets: [] };
@@ -962,6 +1026,7 @@ const categoryChartData = computed(() => {
   };
 });
 
+/** @type {Object} Configuration Chart.js du graphique en anneau (légende masquée, tooltip personnalisé) */
 const categoryChartOptions = {
   responsive: true,
   maintainAspectRatio: true,
@@ -987,13 +1052,25 @@ const categoryChartOptions = {
   },
 };
 
-// ==============================================
-// 3A. Local State: AI Effectiveness (Bypass)
-// ==============================================
+/* ── Section : Bypass des alertes IA ──────────────────────── */
+
 const periodAiBypass = ref("total");
 const dataAiBypass = ref(null);
 const loadingAiBypass = ref(false);
 
+/**
+ * Dérive les métriques de contournement à partir des données brutes de l'API.
+ *
+ * Logique de sévérité :
+ * - `rate < 5%`  → « Faible » (vert)
+ * - `5% ≤ rate < 15%` → « À surveiller » (ambre)
+ * - `rate ≥ 15%` → « Problématique » (rouge)
+ *
+ * `safeWarnings` est borné par `Math.max(warnings, bypasses)` pour éviter un ratio > 100%
+ * dans le cas où le backend retournerait un nombre d'alertes inférieur aux bypasses.
+ *
+ * @type {import('vue').ComputedRef<{severity: Object, trendInfo: Object, rate: number, safeWarnings: number, bypasses: number}>}
+ */
 const bypassMetrics = computed(() => {
   const data = dataAiBypass.value || {};
   const bypasses = data.bypasses || 0;
@@ -1040,6 +1117,11 @@ const bypassMetrics = computed(() => {
   return { severity, trendInfo, rate, safeWarnings, bypasses };
 });
 
+/**
+ * Récupère les statistiques de contournement des alertes IA (bypasses, warnings, tendance).
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchAiBypass = async () => {
   loadingAiBypass.value = true;
   try {
@@ -1054,13 +1136,18 @@ const fetchAiBypass = async () => {
   }
 };
 
-// ==============================================
-// 3B. Local State: AI Effectiveness (Chart)
-// ==============================================
+/* ── Section : Verdict IA vs Décision Finale ──────────────── */
+
 const periodAiChart = ref("total");
 const dataAiChart = ref(null);
 const loadingAiChart = ref(false);
 
+/**
+ * Récupère les données de confrontation verdict IA / décision utilisateur.
+ * Alimente `dataAiChart` avec les `verdict_stats` ventilés par type de recommandation (BUY, CALM, ABANDON).
+ * @async
+ * @returns {Promise<void>}
+ */
 const fetchAiChart = async () => {
   loadingAiChart.value = true;
   try {
@@ -1074,17 +1161,34 @@ const fetchAiChart = async () => {
     loadingAiChart.value = false;
   }
 };
+/** @type {import('vue').Ref<string[]>} Liste des verdicts IA dont le détail « Attendre » est actuellement déplié */
 const expandedWaits = ref([]);
+
+/**
+ * Traduit un code de verdict IA interne en libellé lisible en français.
+ * @param {string} code - Code brut du verdict (« BUY », « CALM » ou « ABANDON »).
+ * @returns {string} Libellé traduit ou le code original si non reconnu.
+ */
 const formatAiVerdict = (code) => {
   const map = { BUY: "Acheter", CALM: "Attendre", ABANDON: "Abandonner" };
   return map[code] || code;
 };
 
+/**
+ * Calcule un pourcentage arrondi à l'entier. Retourne 0 si le total est nul pour éviter une division par zéro.
+ * @param {number} value - Numérateur.
+ * @param {number} total - Dénominateur.
+ * @returns {number} Pourcentage arrondi (0-100).
+ */
 const calcPercent = (value, total) => {
   if (!total || total === 0) return 0;
   return Math.round((value / total) * 100);
 };
 
+/**
+ * Bascule l'état déplié/replié du sous-détail « Attendre » pour un verdict IA donné.
+ * @param {string} verdict - Code du verdict dont on bascule l'affichage.
+ */
 const toggleWaitExpanded = (verdict) => {
   const idx = expandedWaits.value.indexOf(verdict);
   if (idx > -1) {
@@ -1093,14 +1197,14 @@ const toggleWaitExpanded = (verdict) => {
     expandedWaits.value.push(verdict);
   }
 };
-// Watchers
+/* ── Observateurs réactifs : rechargement automatique au changement de filtre ── */
 watch(periodTotalSaved, fetchTotalSaved);
 watch(periodMasteryRatio, fetchMasteryRatio);
 watch([periodCategory, topNCategory], fetchCategory);
 watch(periodAiBypass, fetchAiBypass);
 watch(periodAiChart, fetchAiChart);
 
-// Initialisation
+/* ── Chargement initial de toutes les sections au montage du composant ── */
 onMounted(() => {
   fetchTotalSaved();
   fetchMasteryRatio();
@@ -1111,7 +1215,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Utilitaires pour masquer les scrollbars physiquement tout en gardant le scroll fonctionnel */
+/* Masque les scrollbars natives tout en conservant le défilement tactile et souris */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

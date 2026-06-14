@@ -186,7 +186,6 @@
       <div class="flex-grow border-t border-gray-200"></div>
     </div>
 
-    <!-- Zone du Bouton Google 100% Personnalisé -->
     <div class="w-full max-w-sm flex flex-col items-center">
       <button
         type="button"
@@ -218,7 +217,6 @@
         Google
       </button>
 
-      <!-- Affichage de l'erreur en Français -->
       <p
         v-if="googleError"
         class="text-xs text-red-500 text-center mt-3 font-medium"
@@ -239,6 +237,21 @@
 </template>
 
 <script setup>
+/**
+ * @module LoginView
+ * @description Vue d'authentification des utilisateurs.
+ *
+ * Fonctionnalités principales :
+ * - **Authentification classique** : formulaire e-mail/mot de passe avec gestion des erreurs.
+ * - **SSO Google** : intégration OAuth via `useTokenClient` (vue3-google-signin).
+ * - **Redirection conditionnelle** : redirige vers le tableau de bord administrateur (`is_staff`),
+ *   le parcours d'onboarding (si profil incomplet), ou le tableau de bord utilisateur classique.
+ *
+ * @requires vue - ref, reactive
+ * @requires vue-router - useRouter
+ * @requires @/stores/auth.js - Store Pinia d'authentification (login, googleLogin, fetchUserProfile)
+ * @requires vue3-google-signin - useTokenClient pour le flux OAuth Google customisé
+ */
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.js";
@@ -247,18 +260,32 @@ import { useTokenClient } from "vue3-google-signin";
 const router = useRouter();
 const authStore = useAuthStore();
 
+/** @type {import('vue').Ref<boolean>} Contrôle la visibilité du mot de passe dans l'input */
 const showPassword = ref(false);
+
+/** @type {import('vue').Ref<string>} Message d'erreur spécifique à la connexion Google OAuth */
 const googleError = ref("");
 
+/**
+ * État réactif du formulaire de connexion classique.
+ * @type {{email: string, password: string}}
+ */
 const formData = reactive({
   email: "",
   password: "",
 });
 
+/** Bascule le type de l'input mot de passe (text <-> password) */
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
+/**
+ * Soumet les identifiants classiques à l'API.
+ * Met à jour le profil utilisateur et gère la redirection conditionnelle selon le rôle.
+ * @async
+ * @returns {Promise<void>}
+ */
 const handleLogin = async () => {
   try {
     await authStore.login({
@@ -266,10 +293,10 @@ const handleLogin = async () => {
       password: formData.password,
     });
 
-    // Ensure we fetch the latest profile data before routing
+    /** Synchronise les données du profil avant d'évaluer la redirection */
     await authStore.fetchUserProfile();
 
-    // Check role and redirect accordingly
+    /** Routage conditionnel basé sur le rôle et l'état d'onboarding */
     if (authStore.user?.is_staff) {
       router.push({ name: "admin-dashboard" });
     } else if (authStore.user && !authStore.user.is_onboarded) {
@@ -278,11 +305,14 @@ const handleLogin = async () => {
       router.push("/dashboard");
     }
   } catch (err) {
-    // Error is handled in the template
+    /** L'erreur est gérée et affichée par le store via la propriété `authStore.error` */
   }
 };
 
-// Implémentation via useTokenClient pour autoriser le bouton 100% personnalisé
+/**
+ * Configuration du client OAuth Google.
+ * Le flux utilise les tokens pour permettre le design d'un bouton entièrement personnalisé.
+ */
 const { login: loginWithGoogle } = useTokenClient({
   onSuccess: async (response) => {
     googleError.value = "";

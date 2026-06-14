@@ -24,7 +24,6 @@
         Aucun message de support pour le moment.
       </div>
 
-      <!-- Ticket Cards -->
       <div
         v-for="ticket in feedbacks"
         :key="ticket.id"
@@ -56,12 +55,33 @@
 </template>
 
 <script setup>
+/**
+ * @module AdminFeedbacksView
+ * @description Vue d'administration des tickets de support utilisateur.
+ *
+ * Affiche la liste complète des retours (feedbacks) soumis par les utilisateurs,
+ * triés par date de création. Chaque ticket présente l'objet, l'adresse e-mail
+ * de l'expéditeur, la date de soumission et le contenu du message.
+ *
+ * L'accès est réservé aux administrateurs ; l'endpoint API vérifie
+ * les droits côté serveur et renvoie une erreur 403 en cas d'accès non autorisé.
+ *
+ * @requires vue - ref, onMounted
+ * @requires @/services/api - Client HTTP configuré (axios)
+ */
 import { ref, onMounted } from "vue";
 import api from "@/services/api";
 
+/** @type {import('vue').Ref<Array<Object>>} Liste des tickets de support récupérés depuis l'API */
 const feedbacks = ref([]);
+
+/** @type {import('vue').Ref<boolean>} Indicateur d'état de chargement initial */
 const isLoading = ref(true);
 
+/**
+ * Charge les tickets de support au montage du composant.
+ * En cas d'échec (réseau ou droits insuffisants), affiche une alerte à l'utilisateur.
+ */
 onMounted(async () => {
   try {
     const response = await api.get("/admin-api/feedbacks/");

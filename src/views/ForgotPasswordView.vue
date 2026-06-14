@@ -100,14 +100,43 @@
 </template>
 
 <script setup>
+/**
+ * @module ForgotPasswordView
+ * @description Vue dédiée à la demande de réinitialisation de mot de passe.
+ *
+ * Ce composant permet à l'utilisateur de saisir son adresse e-mail pour recevoir
+ * un lien de réinitialisation. Il gère :
+ * - La validation basique de l'e-mail (côté HTML).
+ * - L'envoi de la demande via `POST /auth/password-reset/`.
+ * - L'affichage d'un message de succès ou la gestion détaillée des erreurs
+ *   (notamment la limitation de requêtes "throttling" à 3/heure).
+ *
+ * @requires vue - ref
+ * @requires @/services/api - Client HTTP configuré
+ */
 import { ref } from "vue";
 import api from "@/services/api";
 
+/** @type {import('vue').Ref<string>} Adresse e-mail saisie par l'utilisateur */
 const email = ref("");
+
+/** @type {import('vue').Ref<boolean>} Indicateur de chargement réseau pendant la soumission */
 const isLoading = ref(false);
+
+/** @type {import('vue').Ref<string>} Message de succès renvoyé par l'API */
 const successMessage = ref("");
+
+/** @type {import('vue').Ref<string>} Message d'erreur formaté à afficher à l'utilisateur */
 const errorMessage = ref("");
 
+/**
+ * Soumet la demande de réinitialisation de mot de passe à l'API.
+ * Gère de manière séquentielle le succès, le dépassement de quota (429),
+ * les erreurs de validation serveur, et les pannes réseau.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const handleRequestReset = async () => {
   isLoading.value = true;
   errorMessage.value = "";

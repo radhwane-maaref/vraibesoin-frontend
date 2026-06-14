@@ -334,6 +334,24 @@
 </template>
 
 <script setup>
+/**
+ * @module Settings
+ * @description Vue principale des paramètres de l'utilisateur.
+ *
+ * Fournit l'accès à plusieurs sous-menus de l'application :
+ * - Profil (`EditProfileView`)
+ * - Préférences (`UserPreferencesView`)
+ * - Assistance et conditions (`HelpSupportView`, `TermsOfServiceView`)
+ *
+ * Gère également les actions globales sur la session et le compte :
+ * - Déconnexion de l'utilisateur.
+ * - Suppression définitive du compte avec flux de confirmation par modales.
+ *
+ * @requires vue - ref
+ * @requires vue-router - useRouter
+ * @requires @/stores/auth.js - Store Pinia d'authentification (logout)
+ * @requires @/services/api - Client HTTP configuré
+ */
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth.js";
@@ -341,16 +359,34 @@ import api from "@/services/api";
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+/** @type {import('vue').Ref<boolean>} Contrôle la visibilité de la modale de confirmation de suppression */
 const showDeleteConfirmModal = ref(false);
+
+/** @type {import('vue').Ref<boolean>} Contrôle la visibilité de la modale de succès après suppression */
 const showDeleteSuccessModal = ref(false);
+
+/** @type {import('vue').Ref<boolean>} Indicateur de chargement réseau pendant la suppression du compte */
 const isDeleting = ref(false);
 
+/**
+ * Déconnecte l'utilisateur en purgeant le store d'authentification,
+ * puis redirige vers la vue de connexion.
+ * @async
+ * @returns {Promise<void>}
+ */
 const performLogout = async () => {
   authStore.logout();
   console.log("User is logging out...");
   await router.push({ name: "login" });
 };
 
+/**
+ * Lance la suppression définitive du compte connecté via un appel API (`DELETE /users/me/`).
+ * Masque la modale de confirmation et affiche la modale de succès en cas de réussite.
+ * @async
+ * @returns {Promise<void>}
+ */
 const executeAccountDeletion = async () => {
   isDeleting.value = true;
   try {
@@ -365,6 +401,12 @@ const executeAccountDeletion = async () => {
   }
 };
 
+/**
+ * Ferme la modale de succès post-suppression, purge la session locale (logout)
+ * et redirige vers la page de connexion.
+ * @async
+ * @returns {Promise<void>}
+ */
 const finalizeDeletionAndLogout = async () => {
   showDeleteSuccessModal.value = false;
   authStore.logout();

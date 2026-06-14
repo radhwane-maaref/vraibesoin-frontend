@@ -293,35 +293,11 @@
               <span class="block text-sm text-gray-800 font-medium ml-1"
                 >À quelle fréquence allez-vous l'utiliser ?</span
               >
-              <div class="relative">
-                <select
-                  v-model="formData.usage_frequency"
-                  class="w-full px-5 py-4 border border-gray-200 rounded-3xl text-[#1F2937] font-semibold focus:ring-2 focus:ring-[#5A877E] outline-none transition-all shadow-sm bg-white appearance-none"
-                  required
-                >
-                  <option value="" disabled>Sélectionnez une fréquence</option>
-                  <option v-for="freq in frequencies" :key="freq" :value="freq">
-                    {{ freq }}
-                  </option>
-                </select>
-                <div
-                  class="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </div>
+              <CustomSelect
+                v-model="formData.usage_frequency"
+                :options="frequencies"
+                placeholder="Sélectionnez une fréquence"
+              />
             </div>
 
             <div class="space-y-2">
@@ -492,6 +468,32 @@
 </template>
 
 <script setup>
+/**
+ * @module AddPurchaseView
+ * @description Formulaire multi-étapes de création d'une intention d'achat.
+ *
+ * **Étape 1** : l'utilisateur téléverse une capture d'écran du produit
+ * (extraction automatique via IA) ou choisit la saisie manuelle.
+ *
+ * **Étape 2** : formulaire détaillé comprenant :
+ * - Identification du produit (nom, prix, catégorie).
+ * - Sélection du portefeuille de financement (principal ou enveloppe budgétaire),
+ *   avec vérification de solde en temps réel.
+ * - Qualification de l'utilité (fréquence d'usage, possession d'un article similaire).
+ * - Indicateur psychologique d'urgence (slider 1–5).
+ *
+ * Une modale d'incohérence s'affiche si le backend détecte une saisie suspecte ;
+ * l'utilisateur peut corriger ou forcer la soumission (bypass tracé).
+ *
+ * @requires vue - ref, reactive, watch, computed, onMounted
+ * @requires vue-router - useRouter
+ * @requires @/stores/coach.js - Store Pinia du coach IA (useCoachStore)
+ * @requires @/stores/currency - Store Pinia des devises (useCurrencyStore)
+ * @requires @/stores/finance.js - Store Pinia des finances (useFinanceStore)
+ * @requires @/stores/envelopes.js - Store Pinia des enveloppes budgétaires (useEnvelopeStore)
+ * @requires @/components/shared/CustomSelect.vue - Sélecteur personnalisé réutilisable
+ * @requires @/services/api - Client HTTP configuré (axios)
+ */
 import { ref, reactive, watch, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useCoachStore } from "@/stores/coach.js";
@@ -501,6 +503,7 @@ import { useEnvelopeStore } from "@/stores/envelopes.js";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 import api from "@/services/api";
 
+/** @type {import('vue').Ref<boolean>} Indicateur d'extraction IA en cours sur une image */
 const isExtracting = ref(false);
 const currencyStore = useCurrencyStore();
 const router = useRouter();
@@ -508,15 +511,31 @@ const coachStore = useCoachStore();
 const financeStore = useFinanceStore();
 const envelopeStore = useEnvelopeStore();
 
+/** @type {import('vue').Ref<boolean>} Contrôle l'affichage de la modale d'incohérence */
 const showErrorModal = ref(false);
+
+/** @type {import('vue').Ref<string>} Message d'erreur affiché dans la modale */
 const errorMessage = ref("");
+
+/** @type {import('vue').Ref<1|2>} Étape courante du formulaire */
 const step = ref(1);
+
+/** @type {import('vue').Ref<string|null>} URL d'aperçu de l'image téléversée (blob URL) */
 const imagePreview = ref(null);
+
+/** @type {import('vue').Ref<File|null>} Fichier image sélectionné par l'utilisateur */
 const selectedFile = ref(null);
 
+/** @type {import('vue').Ref<Array<{value: string, label: string}>>} Catégories de produits chargées depuis l'API */
 const categories = ref([]);
+
+/** @type {string[]} Options de fréquence d'utilisation */
 const frequencies = ["Quotidien", "Hebdomadaire", "Mensuel", "Rarement"];
 
+/**
+ * État réactif du formulaire d'intention d'achat.
+ * @type {{product_name: string, product_price: string, product_category: string, usage_frequency: string, has_similar_item: boolean|null, urgency_level: number, wallet_type: string}}
+ */
 const formData = reactive({
   product_name: "",
   product_price: "",
@@ -524,14 +543,19 @@ const formData = reactive({
   usage_frequency: "",
   has_similar_item: null,
   urgency_level: 3,
-  wallet_type: "main", // New Wallet state
+  wallet_type: "main",
 });
 
+/** @type {Object} Suivi des champs touchés par l'utilisateur (active la validation au blur) */
 const touched = reactive({
   product_name: false,
   product_price: false,
 });
 
+/**
+ * Charge les catégories de produits et les soldes des portefeuilles au montage.
+ * Les deux requêtes de soldes (finances + enveloppes) sont lancées en parallèle.
+ */
 onMounted(async () => {
   try {
     const response = await api.get("/categories/");
@@ -540,19 +564,25 @@ onMounted(async () => {
     console.error("Erreur lors du chargement des catégories :", error);
   }
 
-  // Fetch balances for wallets
   await Promise.all([
     financeStore.fetchFinanceData(),
     envelopeStore.fetchEnvelopes(),
   ]);
 });
 
-// Compute available wallets
+/**
+ * Construit dynamiquement la liste des portefeuilles disponibles pour financer l'achat.
+ *
+ * Le solde réel du portefeuille principal est calculé en soustrayant le montant
+ * réservé par les enveloppes actives. Chaque option est marquée `disabled`
+ * si son solde est épuisé.
+ *
+ * @type {import('vue').ComputedRef<Array<{value: string, label: string, disabled: boolean, balance: number}>>}
+ */
 const walletOptions = computed(() => {
   const options = [];
   const currency = currencyStore.currentCurrency?.code || "";
 
-  // Real accessible main wallet balance (total balance minus locked envelopes)
   const mainBalance = parseFloat(financeStore.balance) || 0;
   const availableMain =
     mainBalance - (parseFloat(envelopeStore.totalReserved) || 0);
@@ -564,7 +594,6 @@ const walletOptions = computed(() => {
     balance: availableMain,
   });
 
-  // Individual Budget Envelopes
   envelopeStore.activeEnvelopes.forEach((env) => {
     const envBalance = parseFloat(env.amount) || 0;
     options.push({
@@ -578,14 +607,16 @@ const walletOptions = computed(() => {
   return options;
 });
 
-// Auto-switch watcher: Ensure selected wallet is always valid
+/**
+ * Bascule automatiquement vers le premier portefeuille valide
+ * si le portefeuille sélectionné devient indisponible (solde épuisé ou supprimé).
+ */
 watch(
   walletOptions,
   (newOptions) => {
     const currentVal = formData.wallet_type;
     const selectedOpt = newOptions.find((o) => o.value === currentVal);
 
-    // If the wallet becomes disabled (e.g. balance drops) or doesn't exist anymore
     if (!selectedOpt || selectedOpt.disabled) {
       const firstValid = newOptions.find((o) => !o.disabled);
       formData.wallet_type = firstValid ? firstValid.value : "";
@@ -594,22 +625,29 @@ watch(
   { immediate: true },
 );
 
+/**
+ * Vérifie la validité d'un nom de produit (min. 3 caractères alphanumériques + espaces).
+ * @param {string} name - Nom à valider.
+ * @returns {boolean} Vrai si le nom est valide.
+ */
 const isValidProductName = (name) => {
   const regex = /^[a-zA-ZÀ-ÿ0-9\s]{3,}$/;
   return regex.test(name.trim());
 };
 
+/** @type {import('vue').ComputedRef<boolean>} Vrai si le nom du produit est vide après interaction */
 const isNameInvalid = computed(() => {
   return touched.product_name && formData.product_name.trim().length === 0;
 });
 
+/** @type {import('vue').ComputedRef<boolean>} Vrai si le prix est négatif ou non numérique après interaction */
 const isPriceInvalid = computed(() => {
   if (!touched.product_price) return false;
   const price = parseFloat(formData.product_price);
   return isNaN(price) || price <= 0;
 });
 
-// Detect if selected wallet has less money than the price
+/** @type {import('vue').ComputedRef<boolean>} Vrai si le prix dépasse le solde du portefeuille sélectionné */
 const isWalletInsufficient = computed(() => {
   const price = parseFloat(formData.product_price);
   if (isNaN(price) || price <= 0 || !formData.wallet_type) return false;
@@ -622,6 +660,11 @@ const isWalletInsufficient = computed(() => {
   return price > selectedOpt.balance;
 });
 
+/**
+ * Détermine si le formulaire est prêt à être soumis.
+ * Bloque la soumission si le solde du portefeuille sélectionné est insuffisant.
+ * @type {import('vue').ComputedRef<boolean>}
+ */
 const isFormValid = computed(() => {
   return (
     formData.product_name.trim() !== "" &&
@@ -631,10 +674,14 @@ const isFormValid = computed(() => {
     formData.usage_frequency !== "" &&
     formData.has_similar_item !== null &&
     formData.wallet_type !== "" &&
-    !isWalletInsufficient.value // Block submission if wallet is insufficient
+    !isWalletInsufficient.value
   );
 });
 
+/**
+ * Pré-remplit le formulaire avec les données extraites par l'IA depuis une image.
+ * Si la catégorie extraite n'existe pas dans le référentiel, elle est rabattue sur « Autre ».
+ */
 watch(
   () => coachStore.extractedData,
   (newData) => {
@@ -656,6 +703,11 @@ watch(
   { deep: true },
 );
 
+/**
+ * Gère le téléversement d'une image : crée un aperçu, passe à l'étape 2
+ * et lance l'extraction IA des informations produit.
+ * @param {Event} event - Événement `change` du champ fichier.
+ */
 const handleImageUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -672,10 +724,12 @@ const handleImageUpload = async (event) => {
   }
 };
 
+/** Bascule vers l'étape 2 en mode saisie manuelle (sans extraction d'image) */
 const goToManualEntry = () => {
   step.value = 2;
 };
 
+/** Réinitialise le formulaire et retourne à l'étape 1 (sélection du mode d'entrée) */
 const resetToStep1 = () => {
   step.value = 1;
   imagePreview.value = null;
@@ -690,6 +744,16 @@ const resetToStep1 = () => {
     walletOptions.value.find((o) => !o.disabled)?.value || "";
 };
 
+/**
+ * Soumet l'intention d'achat au backend via le store coach.
+ * En cas de succès, redirige vers la page de réflexion.
+ * En cas d'erreur (incohérence détectée), affiche la modale de correction.
+ *
+ * @async
+ * @param {boolean} [bypassed=false] - Si vrai, signale que l'utilisateur a choisi
+ *   de contourner l'alerte d'incohérence (tracé côté serveur).
+ * @returns {Promise<void>}
+ */
 const handleSubmitIntention = async (bypassed = false) => {
   try {
     const payload = {
@@ -699,7 +763,7 @@ const handleSubmitIntention = async (bypassed = false) => {
       usage_frequency: formData.usage_frequency,
       has_similar_item: formData.has_similar_item,
       urgency_level: parseInt(formData.urgency_level),
-      wallet_type: formData.wallet_type, // Persist selection
+      wallet_type: formData.wallet_type,
       is_incoherent_bypassed: bypassed,
     };
 
@@ -717,6 +781,10 @@ const handleSubmitIntention = async (bypassed = false) => {
   }
 };
 
+/**
+ * Ferme la modale d'incohérence et relance la soumission avec le drapeau `bypassed`
+ * pour tracer côté serveur que l'utilisateur a ignoré l'avertissement.
+ */
 const forceSubmit = () => {
   showErrorModal.value = false;
   handleSubmitIntention(true);

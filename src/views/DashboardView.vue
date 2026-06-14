@@ -70,6 +70,25 @@
 </template>
 
 <script setup>
+/**
+ * @module DashboardView
+ * @description Vue principale du tableau de bord utilisateur.
+ *
+ * Ce composant agrège plusieurs sous-composants pour offrir une vue d'ensemble :
+ * - Message du coach IA (`AiCoachMessage`)
+ * - Carte de solde et épargne (`BalanceCard`)
+ * - Bannière de rappel des intentions en attente (`ReminderBanner`)
+ * - Liste des revenus programmés (`ScheduledIncomes`)
+ * - Gestion des charges fixes (`SecuredVault`)
+ * - Gestion des enveloppes budgétaires (`BudgetEnvelopes`)
+ * - Objectif d'épargne (`SavingsCard`)
+ *
+ * Utilise une stratégie "cache-then-network" pour un affichage immédiat.
+ *
+ * @requires vue - onMounted, ref
+ * @requires @/services/api - Client HTTP
+ * @requires @/stores/currency - Store de gestion des devises
+ */
 import { onMounted, ref } from "vue";
 import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
@@ -83,15 +102,28 @@ import BudgetEnvelopes from "@/components/dashboard/BudgetEnvelopes.vue";
 import AddEditChargeModal from "@/components/finance/AddEditChargeModal.vue";
 import ScheduledIncomes from "@/components/finance/ScheduledIncomes.vue";
 
+/** @type {import('vue').Ref<boolean>} Indicateur de chargement initial des données */
 const isLoading = ref(true);
+
+/** @type {import('vue').Ref<Object|null>} Données complètes du tableau de bord retournées par l'API */
 const dashboardData = ref(null);
 const currencyStore = useCurrencyStore();
 
+/** @type {import('vue').Ref<any>} Référence au composant enfant ScheduledIncomes pour piloter ses modales */
 const incomesListRef = ref(null);
 
+/** @type {import('vue').Ref<boolean>} Contrôle de l'affichage de la modale des charges fixes */
 const isChargeModalOpen = ref(false);
+
+/** @type {import('vue').Ref<Object|null>} Charge actuellement sélectionnée pour édition */
 const selectedChargeToEdit = ref(null);
 
+/**
+ * Récupère les données du tableau de bord via l'API et met à jour le cache local.
+ * @async
+ * @param {boolean} [background=false] - Si vrai, n'active pas l'indicateur de chargement global (isLoading).
+ * @returns {Promise<void>}
+ */
 const fetchDashboardSummary = async (background = false) => {
   if (!background) isLoading.value = true;
   try {
@@ -108,16 +140,20 @@ const fetchDashboardSummary = async (background = false) => {
   }
 };
 
+/**
+ * Initialisation : Applique la stratégie "cache-then-network".
+ * Charge d'abord les données depuis le localStorage pour un affichage immédiat,
+ * puis effectue une requête en arrière-plan pour synchroniser les informations.
+ */
 onMounted(() => {
   const cached = localStorage.getItem("dashboard_summary_cache");
   if (cached) {
     try {
       dashboardData.value = JSON.parse(cached);
       isLoading.value = false;
-      // Fetch in background to update cache and view
       fetchDashboardSummary(true);
     } catch (e) {
-      console.error("Cache parsing error", e);
+      console.error("Erreur de parsing du cache :", e);
       fetchDashboardSummary();
     }
   } else {
@@ -125,20 +161,36 @@ onMounted(() => {
   }
 });
 
+/**
+ * Déclenche l'ouverture de la modale d'ajout de revenu dans le sous-composant ciblé.
+ */
 const triggerAddIncome = () => {
   incomesListRef.value?.openAddModal();
 };
 
+/**
+ * Ouvre la modale en mode création d'une nouvelle charge fixe.
+ */
 const openAddChargeModal = () => {
   selectedChargeToEdit.value = null;
   isChargeModalOpen.value = true;
 };
 
+/**
+ * Ouvre la modale en mode édition avec les données de la charge cible.
+ * @param {Object} charge - Objet charge à éditer.
+ */
 const openEditChargeModal = (charge) => {
   selectedChargeToEdit.value = charge;
   isChargeModalOpen.value = true;
 };
 
+/**
+ * Règle une charge fixe via son ID et le montant spécifié, puis rafraîchit les données.
+ * @async
+ * @param {{id: number, actual_amount: number}} payload - Données du règlement.
+ * @returns {Promise<void>}
+ */
 const handleSettleCharge = async ({ id, actual_amount }) => {
   try {
     await api.post(`/fixed-charges/${id}/settle/`, { actual_amount });
@@ -148,6 +200,12 @@ const handleSettleCharge = async ({ id, actual_amount }) => {
   }
 };
 
+/**
+ * Crée ou met à jour une charge fixe selon que `selectedChargeToEdit` est défini ou non.
+ * @async
+ * @param {Object} chargeData - Les données modifiées de la charge.
+ * @returns {Promise<void>}
+ */
 const handleSaveCharge = async (chargeData) => {
   try {
     if (selectedChargeToEdit.value) {
@@ -168,21 +226,19 @@ const handleSaveCharge = async (chargeData) => {
 </script>
 
 <style scoped>
-/* 1. Animation plus rapide (0.4s au lieu de 0.6s) et courbe de Bézier plus "nerveuse" */
+/* Configuration de la transition échelonnée */
 .staggered-fade-enter-active,
 .staggered-fade-leave-active {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 2. Mouvement réduit (12px au lieu de 20px) pour un effet moins "flottant" et plus sec */
 .staggered-fade-enter-from,
 .staggered-fade-leave-to {
   opacity: 0;
   transform: translateY(12px);
 }
 
-/* 3. Cascade ultra-rapide (25ms d'écart au lieu de 75ms) */
-/* L'œil perçoit la vague, mais l'utilisateur n'attend plus */
+/* Délais d'animation en cascade par enfant */
 :deep(> *:nth-child(1)) {
   transition-delay: 0ms;
 }

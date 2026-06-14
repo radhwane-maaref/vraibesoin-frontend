@@ -108,7 +108,6 @@
       </main>
     </div>
 
-    <!-- Custom Modal -->
     <div
       v-if="modal.show"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
@@ -117,7 +116,6 @@
         class="bg-[#FFFFFF] border border-[#D9D9D9] rounded-[24px] shadow-2xl p-6 sm:p-8 max-w-sm w-full animate-fade-in"
       >
         <div class="flex flex-col items-center text-center">
-          <!-- Icon depending on status -->
           <div
             v-if="modal.type === 'success'"
             class="w-12 h-12 rounded-full bg-[#5B8C85]/10 flex items-center justify-center text-[#5B8C85] mb-4"
@@ -177,19 +175,46 @@
 </template>
 
 <script setup>
+/**
+ * @module HelpSupport
+ * @description Formulaire de soumission d'avis et de réclamations utilisateur.
+ *
+ * L'utilisateur peut :
+ * - Renseigner un objet (sujet du message).
+ * - Attribuer une note de 1 à 5 étoiles (obligatoire).
+ * - Rédiger un message descriptif.
+ *
+ * À la soumission, le formulaire est envoyé via `POST /app-feedback/`.
+ * Une modale de confirmation (succès ou erreur) s'affiche selon le résultat.
+ *
+ * @requires vue - ref
+ * @requires @/services/api - Client HTTP configuré (axios)
+ * @requires @/components/shared/SettingsPageHeader.vue - En-tête réutilisable des pages paramètres
+ */
 import { ref } from "vue";
 import api from "@/services/api";
 import SettingsPageHeader from "@/components/shared/SettingsPageHeader.vue";
 
+/**
+ * État réactif du formulaire.
+ * @type {import('vue').Ref<{rating: number, subject: string, message: string}>}
+ */
 const form = ref({
   rating: 0,
   subject: "",
   message: "",
 });
 
+/** @type {import('vue').Ref<number>} Note survolée (0 = aucune), utilisée pour le retour visuel au hover */
 const hoveredRating = ref(0);
+
+/** @type {import('vue').Ref<boolean>} Verrouillage du bouton pendant l'envoi */
 const isSubmitting = ref(false);
 
+/**
+ * État réactif de la modale de retour (succès / erreur).
+ * @type {import('vue').Ref<{show: boolean, type: 'success'|'error', title: string, message: string}>}
+ */
 const modal = ref({
   show: false,
   type: "success",
@@ -197,6 +222,12 @@ const modal = ref({
   message: "",
 });
 
+/**
+ * Affiche la modale de retour avec le type, le titre et le message spécifiés.
+ * @param {'success'|'error'} type - Type visuel de la modale.
+ * @param {string} title - Titre affiché dans la modale.
+ * @param {string} message - Message descriptif.
+ */
 const showModal = (type, title, message) => {
   modal.value = {
     show: true,
@@ -206,10 +237,20 @@ const showModal = (type, title, message) => {
   };
 };
 
+/** Ferme la modale de retour */
 const closeModal = () => {
   modal.value.show = false;
 };
 
+/**
+ * Valide et soumet le formulaire d'avis / réclamation.
+ *
+ * Garde de validation : l'envoi est bloqué si la note est à 0 (modale d'erreur affichée).
+ * Après succès, le formulaire est réinitialisé et une modale de confirmation s'affiche.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const submitForm = async () => {
   if (!form.value.subject || !form.value.message) return;
   if (form.value.rating === 0) {

@@ -8,9 +8,11 @@
           <h1
             class="text-lg sm:text-xl font-bold text-gray-900 text-center truncate px-10"
           >
-            <span v-if="currentStep === 'QUESTIONS'">Interrogatoire</span>
+            <span v-if="currentStep === 'QUESTIONS'"
+              >Questions de réflexion</span
+            >
             <span v-else-if="currentStep === 'LOADING'">Vrai Besoin</span>
-            <span v-else>Décision finale</span>
+            <span v-else>Analyse en cours</span>
           </h1>
           <button
             @click="showCancelModal = true"
@@ -65,31 +67,14 @@
             class="absolute inset-0 border-4 border-[#5A877E] rounded-full border-t-transparent animate-spin"
           ></div>
           <div class="absolute inset-0 flex items-center justify-center">
-            <svg
-              class="w-6 h-6 sm:w-8 sm:h-8 text-[#5A877E] animate-pulse"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+            <span class="text-[#5A877E] font-bold text-lg sm:text-xl">{{ progressPercentage }}%</span>
           </div>
         </div>
         <h2
           class="text-xl sm:text-2xl font-serif font-bold text-gray-900 mb-2 text-center"
         >
-          Préparation du coach...
+          Préparation des questions...
         </h2>
-        <p
-          class="text-gray-500 text-center text-xs sm:text-sm px-4 leading-relaxed max-w-xs mx-auto"
-        >
-          L'IA analyse votre profil et conçoit un interrogatoire sur-mesure.
-        </p>
       </main>
 
       <main
@@ -487,6 +472,23 @@
 </template>
 
 <script setup>
+/**
+ * @module EvaluationWizard
+ * @description Assistant interactif (wizard) en 3 étapes pour guider l'utilisateur
+ * dans l'évaluation de son intention d'achat via l'IA.
+ *
+ * Déroulement du tunnel :
+ * 1. `GENERATING_QUESTIONS` : Sollicitation de l'API pour générer 3 questions ciblées.
+ * 2. `QUESTIONS` : Affichage successif des questions avec réponses suggérées ou saisie libre.
+ * 3. `LOADING` / `RESULT` : Soumission des réponses pour verdict IA, puis présentation de
+ *    la décision recommandée (Acheter, Attendre, Abandonner).
+ *
+ * @requires vue - ref, computed, onMounted
+ * @requires vue-router - useRoute, useRouter
+ * @requires @/services/api - Client HTTP configuré
+ * @requires @/stores/currency - Store des devises
+ * @requires @/stores/auth.js - Store d'authentification (pour récupérer la préférence de cooldown)
+ */
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/services/api";
@@ -499,13 +501,21 @@ const route = useRoute();
 const router = useRouter();
 const intentionId = route.params.id;
 
+/** @type {import('vue').ComputedRef<number>} Durée de réflexion préférée de l'utilisateur (en heures) */
 const cooldownHours = computed(() => {
   return authStore.user?.cooldown_preference || 24;
 });
 
+/** @type {import('vue').Ref<boolean>} Contrôle de la modale de confirmation finale */
 const showModal = ref(false);
+
+/** @type {import('vue').Ref<string|null>} Action finale en attente de confirmation ('BUY', 'CALM', 'ABANDON') */
 const pendingAction = ref(null);
 
+/**
+ * Contenu dynamique de la modale de confirmation selon l'action choisie.
+ * @type {import('vue').ComputedRef<{title: string, description: string, iconBg: string, iconColor: string, btnColor: string, iconPath: string}>}
+ */
 const modalContent = computed(() => {
   if (pendingAction.value === "BUY") {
     return {
@@ -540,18 +550,41 @@ const modalContent = computed(() => {
   }
 });
 
+/** @type {import('vue').Ref<'INITIALIZING'|'GENERATING_QUESTIONS'|'QUESTIONS'|'LOADING'|'RESULT'>} Étape courante du wizard */
 const currentStep = ref("INITIALIZING");
+
+/** @type {import('vue').Ref<Array<Object>>} Liste des questions générées par l'IA */
 const questions = ref([]);
+
+/** @type {import('vue').Ref<number>} Index de la question actuellement affichée (0 à 2) */
 const activeQuestionIndex = ref(0);
+
+/** @type {import('vue').Ref<Array<{id: string|number, answer: string}>>} Tableau accumulant les réponses de l'utilisateur */
 const userAnswers = ref([]);
+
+/** @type {import('vue').Ref<Object>} Données de l'intention d'achat, incluant finalement le verdict IA */
 const intentionData = ref({});
+
+/** @type {import('vue').Ref<number>} Pourcentage de progression factice pour les écrans de chargement */
 const progressPercentage = ref(0);
+
+/** @type {import('vue').Ref<boolean>} Contrôle de la modale d'annulation globale */
 const showCancelModal = ref(false);
 
+/** @type {import('vue').Ref<boolean>} Bascule vers le champ de saisie libre pour la réponse à la question courante */
 const showCustomInput = ref(false);
+
+/** @type {import('vue').Ref<string>} Texte saisi par l'utilisateur si `showCustomInput` est vrai */
 const customAnswerText = ref("");
+
+/** @type {import('vue').Ref<string>} Réponse sélectionnée parmi les suggestions de l'IA */
 const selectedAnswer = ref("");
 
+/**
+ * Traduit le code du verdict IA en libellé lisible.
+ * @param {'BUY'|'CALM'|'ABANDON'|string} verdict - Code du verdict.
+ * @returns {string} Libellé en français.
+ */
 const formatVerdict = (verdict) => {
   const labels = {
     BUY: "Acheter",
@@ -561,6 +594,11 @@ const formatVerdict = (verdict) => {
   return labels[verdict] || verdict;
 };
 
+/**
+ * Cycle de vie : initialise le tunnel.
+ * Charge l'intention ; si elle a déjà un verdict, passe directement à RESULT.
+ * Sinon, demande la génération des 3 questions d'analyse.
+ */
 onMounted(async () => {
   try {
     const intentionRes = await api.get(`/purchase-intentions/${intentionId}/`);
@@ -570,37 +608,54 @@ onMounted(async () => {
       currentStep.value = "RESULT";
     } else {
       currentStep.value = "GENERATING_QUESTIONS";
+      startProgressAnimation();
       const response = await api.post(
         `/purchase-intentions/${intentionId}/generate-questions/`,
       );
+      clearInterval(progressInterval);
+      progressPercentage.value = 100;
       questions.value = response.data;
-      currentStep.value = "QUESTIONS";
+      setTimeout(() => {
+        currentStep.value = "QUESTIONS";
+      }, 500);
     }
   } catch (error) {
+    clearInterval(progressInterval);
     console.error("Erreur lors de l'initialisation du wizard", error);
   }
 });
 
+/** @type {import('vue').ComputedRef<Object|undefined>} Objet représentant la question courante */
 const currentQuestion = computed(
   () => questions.value[activeQuestionIndex.value],
 );
 
+/** @type {import('vue').ComputedRef<boolean>} Évalue si une réponse valide a été fournie à la question courante */
 const currentAnswerValid = computed(() => {
   if (showCustomInput.value) return customAnswerText.value.trim().length > 0;
   return selectedAnswer.value.length > 0;
 });
 
+/**
+ * Sélectionne une suggestion de l'IA et désactive le champ libre.
+ * @param {string} option - Le texte de l'option cliquée.
+ */
 const selectOption = (option) => {
   selectedAnswer.value = option;
   showCustomInput.value = false;
   customAnswerText.value = "";
 };
 
+/** Active le champ de saisie libre (désélectionne toute suggestion) */
 const enableCustomInput = () => {
   showCustomInput.value = true;
   selectedAnswer.value = "";
 };
 
+/**
+ * Restaure l'état de l'interface (sélection vs saisie libre) si
+ * l'utilisateur revient sur une question précédente.
+ */
 const restoreAnswerState = () => {
   const saved = userAnswers.value[activeQuestionIndex.value];
   if (saved) {
@@ -623,6 +678,11 @@ const restoreAnswerState = () => {
   }
 };
 
+/**
+ * Enregistre la réponse courante et passe à la question suivante.
+ * Si c'était la dernière question, lance la requête pour obtenir le verdict.
+ * @async
+ */
 const goNext = async () => {
   if (!currentAnswerValid.value) return;
 
@@ -630,7 +690,7 @@ const goNext = async () => {
     ? customAnswerText.value.trim()
     : selectedAnswer.value;
 
-  // Enregistrer ou écraser la réponse
+  // Persiste la réponse dans le tableau par index (permet l'écrasement en cas de retour en arrière)
   userAnswers.value[activeQuestionIndex.value] = {
     id: currentQuestion.value.id,
     answer: finalAnswer,
@@ -646,6 +706,9 @@ const goNext = async () => {
   }
 };
 
+/**
+ * Recule d'une étape dans le questionnaire et restaure la réponse précédemment saisie.
+ */
 const goPrevious = () => {
   if (activeQuestionIndex.value > 0) {
     activeQuestionIndex.value--;
@@ -654,6 +717,10 @@ const goPrevious = () => {
 };
 
 let progressInterval;
+/**
+ * Simule une barre de progression pour les appels API potentiellement longs
+ * (génération de questions et analyse du verdict).
+ */
 const startProgressAnimation = () => {
   progressPercentage.value = 0;
   progressInterval = setInterval(() => {
@@ -663,6 +730,11 @@ const startProgressAnimation = () => {
   }, 200);
 };
 
+/**
+ * Soumet les 3 réponses de l'utilisateur à l'API pour générer le verdict final.
+ * Alterne vers l'écran de résultat en cas de succès.
+ * @async
+ */
 const fetchVerdict = async () => {
   try {
     const response = await api.post(
@@ -686,11 +758,21 @@ const fetchVerdict = async () => {
   }
 };
 
+/**
+ * Prépare l'action de clôture de l'intention selon la décision de l'utilisateur
+ * et ouvre la modale de confirmation finale.
+ * @param {'BUY'|'CALM'|'ABANDON'} decisionCode - Décision de l'utilisateur.
+ */
 const triggerAction = (decisionCode) => {
   pendingAction.value = decisionCode;
   showModal.value = true;
 };
 
+/**
+ * Exécute l'appel API pour valider la décision finale choisie par l'utilisateur,
+ * puis redirige vers le tableau de bord.
+ * @async
+ */
 const submitFinalDecision = async () => {
   try {
     await api.patch(`/purchase-intentions/${intentionId}/final-decision/`, {
@@ -703,6 +785,10 @@ const submitFinalDecision = async () => {
   }
 };
 
+/**
+ * Interrompt purement et simplement le processus d'analyse en cours
+ * et redirige vers le tableau de bord sans sauvegarde.
+ */
 const executeCancel = () => {
   showCancelModal.value = false;
   router.push({ name: "dashboard" });

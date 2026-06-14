@@ -424,21 +424,51 @@
 </template>
 
 <script setup>
+/**
+ * @module AdminSystemHealth
+ * @description Vue de suivi et de gestion des anomalies système (error logs).
+ *
+ * Fonctionnalités principales :
+ * - **Liste groupée** : les erreurs identiques (même méthode HTTP, endpoint et message)
+ *   sont regroupées avec un compteur d'occurrences ; seule l'entrée la plus récente est affichée.
+ * - **Filtrage** : recherche textuelle libre et filtre par statut d'avancement.
+ * - **Panneau de détails** (slide-in) : permet de modifier le statut, la priorité
+ *   et de rédiger une note de résolution pour chaque anomalie.
+ * - **Garde de clôture** : une modale de confirmation s'affiche si l'administrateur
+ *   tente de fermer une anomalie sans fournir de note de résolution suffisante.
+ *
+ * Les données sont gérées via le store Pinia `adminStore` (actions `fetchErrors`, `updateErrorLog`).
+ *
+ * @requires vue - ref, reactive, computed, onMounted
+ * @requires @/stores/admin - Store Pinia de gestion des logs d'erreurs (useAdminStore)
+ * @requires @/components/shared/CustomSelect.vue - Sélecteur personnalisé réutilisable
+ */
 import { ref, reactive, computed, onMounted } from "vue";
 import { useAdminStore } from "@/stores/admin";
 import CustomSelect from "@/components/shared/CustomSelect.vue";
 
 const adminStore = useAdminStore();
+
+/** @type {import('vue').Ref<Object|null>} Log d'erreur actuellement sélectionné dans le panneau de détails */
 const selectedLog = ref(null);
+
+/** @type {import('vue').Ref<string>} Message toast temporaire affiché en bas d'écran */
 const toastMsg = ref("");
+
+/** @type {import('vue').Ref<boolean>} Contrôle l'affichage de la modale d'avertissement de clôture sans note */
 const showNoteModal = ref(false);
 
+/**
+ * État réactif du formulaire d'édition dans le panneau de détails.
+ * @type {{status: string, priority: string, note: string}}
+ */
 const editForm = reactive({
   status: "",
   priority: "",
   note: "",
 });
 
+/** @type {Record<string, string>} Correspondance code API → libellé français des statuts d'avancement */
 const statusLabels = {
   NEW: "Nouveau",
   TRIAGED: "En analyse",
@@ -448,6 +478,7 @@ const statusLabels = {
   CLOSED: "Fermé",
 };
 
+/** @type {Record<string, string>} Correspondance code API → libellé français des niveaux de sévérité */
 const priorityLabels = {
   LOW: "Basse",
   MEDIUM: "Moyenne",
@@ -455,18 +486,22 @@ const priorityLabels = {
   CRITICAL: "Critique",
 };
 
+/** @type {Array<{value: string, label: string}>} Options du sélecteur de statut (incluant l'option « Tous ») */
 const statusOptions = [
   { value: "", label: "Tous les statuts" },
   ...Object.entries(statusLabels).map(([v, l]) => ({ value: v, label: l })),
 ];
 
+/** @type {Array<{value: string, label: string}>} Options du sélecteur de priorité (incluant l'option « Toutes ») */
 const priorityOptions = [
   { value: "", label: "Toutes priorités" },
   ...Object.entries(priorityLabels).map(([v, l]) => ({ value: v, label: l })),
 ];
 
+/** État réactif des filtres de recherche appliqués à la liste des anomalies */
 const filters = reactive({ status: "", priority: "", search: "" });
 
+/** @type {Record<string, string>} Classes CSS Tailwind associées à chaque statut pour le badge visuel */
 const statusColors = {
   NEW: "bg-purple-100 text-purple-700 border border-purple-200",
   TRIAGED: "bg-blue-100 text-blue-700 border border-blue-200",
@@ -476,6 +511,13 @@ const statusColors = {
   CLOSED: "bg-gray-100 text-gray-600 border border-gray-200",
 };
 
+/**
+ * Déduplique les erreurs identiques et les regroupe par clé composite
+ * (méthode HTTP + endpoint + message). Chaque groupe conserve l'occurrence
+ * la plus récente et un compteur. Le résultat est trié par date décroissante.
+ *
+ * @type {import('vue').ComputedRef<Array<{count: number, latest: Object}>>}
+ */
 const groupedErrors = computed(() => {
   const groups = {};
   if (!adminStore.errors) return [];
@@ -493,9 +535,21 @@ const groupedErrors = computed(() => {
   );
 });
 
+/** Déclenche le rechargement des logs via le store avec les filtres courants */
 const loadData = () => adminStore.fetchErrors(filters);
+
+/**
+ * Traduit un code de statut interne en libellé français.
+ * @param {string} val - Code statut (ex. « NEW », « FIXED »).
+ * @returns {string} Libellé traduit ou le code original si non reconnu.
+ */
 const translateStatus = (val) => statusLabels[val] || val;
 
+/**
+ * Ouvre le panneau de détails et pré-remplit le formulaire d'édition
+ * avec les valeurs actuelles du log sélectionné.
+ * @param {Object} log - Entrée d'erreur à afficher.
+ */
 const openDetails = (log) => {
   selectedLog.value = log;
   editForm.status = log.status;
@@ -503,16 +557,27 @@ const openDetails = (log) => {
   editForm.note = log.resolution_note || "";
 };
 
+/** Ferme le panneau de détails et réinitialise les états associés */
 const closeDetails = () => {
   selectedLog.value = null;
   showNoteModal.value = false;
 };
 
+/**
+ * Affiche un message toast temporaire pendant 3,5 secondes.
+ * @param {string} msg - Texte du message à afficher.
+ */
 const showToast = (msg) => {
   toastMsg.value = msg;
   setTimeout(() => (toastMsg.value = ""), 3500);
 };
 
+/**
+ * Gestionnaire du bouton « Sauvegarder ».
+ * Si le statut choisi est un statut de clôture (FIXED, CLOSED, VERIFIED)
+ * et que la note de résolution fait moins de 5 caractères, une modale
+ * de confirmation est affichée pour éviter la perte de traçabilité.
+ */
 const handleSave = () => {
   if (!selectedLog.value) return;
 
@@ -526,6 +591,12 @@ const handleSave = () => {
   }
 };
 
+/**
+ * Persiste les modifications du log d'erreur via le store,
+ * puis recharge la liste et ferme le panneau.
+ * @async
+ * @returns {Promise<void>}
+ */
 const confirmSave = async () => {
   showNoteModal.value = false;
   try {
@@ -545,6 +616,11 @@ const confirmSave = async () => {
   }
 };
 
+/**
+ * Convertit un horodatage ISO en délai relatif lisible (ex. « Il y a 3 h »).
+ * @param {string} dateStr - Date au format ISO 8601.
+ * @returns {string} Délai relatif en français.
+ */
 const timeAgo = (dateStr) => {
   const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
   if (diff < 60) return "À l'instant";
@@ -604,7 +680,7 @@ onMounted(() => loadData());
   transform: translate(-50%, 20px) scale(0.95);
 }
 
-/* Custom Scrollbar for better UX inside sidebar */
+/* Scrollbar personnalisée du panneau latéral de détails */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
