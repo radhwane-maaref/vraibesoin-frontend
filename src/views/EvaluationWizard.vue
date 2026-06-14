@@ -500,9 +500,11 @@ import { useRoute, useRouter } from "vue-router";
 import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
 import { useAuthStore } from "@/stores/auth.js";
+import { useFinanceStore } from "@/stores/finance.js";
 
 const authStore = useAuthStore();
 const currencyStore = useCurrencyStore();
+const financeStore = useFinanceStore();
 const route = useRoute();
 const router = useRouter();
 const intentionId = route.params.id;
@@ -784,6 +786,11 @@ const submitFinalDecision = async () => {
     await api.patch(`/purchase-intentions/${intentionId}/final-decision/`, {
       user_final_decision: pendingAction.value,
     });
+    
+    if (pendingAction.value === 'BUY') {
+      await financeStore.fetchFinanceData();
+    }
+    
     showModal.value = false;
     router.push({ name: "dashboard" });
   } catch (error) {
