@@ -501,10 +501,12 @@ import api from "@/services/api";
 import { useCurrencyStore } from "@/stores/currency";
 import { useAuthStore } from "@/stores/auth.js";
 import { useFinanceStore } from "@/stores/finance.js";
+import { useEnvelopeStore } from "@/stores/envelopes.js";
 
 const authStore = useAuthStore();
 const currencyStore = useCurrencyStore();
 const financeStore = useFinanceStore();
+const envelopeStore = useEnvelopeStore();
 const route = useRoute();
 const router = useRouter();
 const intentionId = route.params.id;
@@ -789,6 +791,7 @@ const submitFinalDecision = async () => {
     
     if (pendingAction.value === 'BUY') {
       await financeStore.fetchFinanceData();
+      await envelopeStore.fetchEnvelopes();
     }
     
     showModal.value = false;

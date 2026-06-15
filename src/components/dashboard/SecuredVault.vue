@@ -1,9 +1,13 @@
 <template>
-  <div class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col gap-4 font-['DM_Sans',_sans-serif]">
+  <div
+    class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col gap-4 font-['DM_Sans',_sans-serif]"
+  >
     <!-- Header: Title and Add button -->
     <div class="flex items-center justify-between">
       <div>
-        <h3 class="text-lg font-bold text-gray-900">Mes charges</h3>
+        <h3 class="text-lg sm:text-xl font-semibold text-slate-900">
+          Mes charges
+        </h3>
         <p class="text-xs text-gray-400 mt-0.5">
           Vos abonnements, loyers et factures prévus
         </p>
@@ -30,7 +34,9 @@
     </div>
 
     <!-- Vault Summary Banner -->
-    <div class="bg-[#F8F6F2] rounded-2xl p-4 border border-gray-100 flex items-center justify-between mt-2">
+    <div
+      class="bg-[#F8F6F2] rounded-2xl p-4 border border-gray-100 flex items-center justify-between mt-2"
+    >
       <div class="flex items-center gap-3 text-left">
         <span class="text-2xl">🔒</span>
         <div>
@@ -57,7 +63,10 @@
       leave-from-class="transform opacity-100 translate-y-0"
       leave-to-class="transform opacity-0 -translate-y-2"
     >
-      <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-800 rounded-2xl p-3 flex items-center gap-2 text-xs sm:text-sm font-bold">
+      <div
+        v-if="successMessage"
+        class="bg-green-50 border border-green-200 text-green-800 rounded-2xl p-3 flex items-center gap-2 text-xs sm:text-sm font-bold"
+      >
         <span>✅</span>
         <span>{{ successMessage }}</span>
       </div>
@@ -76,7 +85,9 @@
           @click="handleEditCharge(charge)"
         >
           <div>
-            <h4 class="font-bold text-sm text-gray-800 group-hover:text-[#5B8C85] transition-colors">
+            <h4
+              class="font-bold text-sm text-gray-800 group-hover:text-[#5B8C85] transition-colors"
+            >
               {{ charge.name }}
             </h4>
             <p class="text-xs text-gray-400 mt-0.5">
@@ -88,7 +99,8 @@
             <div class="text-right">
               <p class="font-bold text-sm text-gray-900">
                 <span v-if="charge.is_paid">
-                  Montant payé: {{ Number(charge.actual_amount_paid).toFixed(2) }}
+                  Montant payé:
+                  {{ Number(charge.actual_amount_paid).toFixed(2) }}
                 </span>
                 <span v-else-if="charge.is_fixed">
                   {{ Number(charge.exact_amount).toFixed(2) }}
@@ -195,7 +207,10 @@
     </div>
 
     <!-- Voir tout moved to the bottom -->
-    <div v-if="showAllLink" class="pt-3 text-center border-t border-gray-100 mt-2">
+    <div
+      v-if="showAllLink"
+      class="pt-3 text-center border-t border-gray-100 mt-2"
+    >
       <router-link
         :to="{ name: 'charges' }"
         class="inline-block px-4 py-2 text-[#5B8C85] text-sm font-bold hover:bg-[#F8F6F2] rounded-full transition-colors"
@@ -240,7 +255,10 @@ const fetchCharges = async () => {
     const response = await api.get("/dashboard/summary/");
     localCharges.value = response.data.fixed_charges || [];
   } catch (error) {
-    console.error("Erreur lors du chargement des charges dans SecuredVault :", error);
+    console.error(
+      "Erreur lors du chargement des charges dans SecuredVault :",
+      error,
+    );
   }
 };
 
@@ -251,7 +269,9 @@ onMounted(() => {
 });
 
 const displayCharges = computed(() => {
-  return props.charges && props.charges.length > 0 ? props.charges : localCharges.value;
+  return props.charges && props.charges.length > 0
+    ? props.charges
+    : localCharges.value;
 });
 
 // Watcher pour détecter quand une charge passe à l'état payé/réglé et afficher le message de succès
@@ -260,7 +280,8 @@ watch(
   (newCharges, oldCharges) => {
     if (oldCharges && oldCharges.length > 0) {
       const newlyPaid = newCharges.find(
-        (nc) => nc.is_paid && !oldCharges.find((oc) => oc.id === nc.id)?.is_paid
+        (nc) =>
+          nc.is_paid && !oldCharges.find((oc) => oc.id === nc.id)?.is_paid,
       );
       if (newlyPaid) {
         successMessage.value = `La charge "${newlyPaid.name}" a été réglée avec succès !`;
@@ -270,7 +291,7 @@ watch(
       }
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 const handleAddCharge = () => {
@@ -300,9 +321,7 @@ const sortedCharges = computed(() => {
   }
 
   // Ensuite, tri par date d'échéance
-  return list.sort((a, b) =>
-    new String(a.due_date).localeCompare(b.due_date),
-  );
+  return list.sort((a, b) => new String(a.due_date).localeCompare(b.due_date));
 });
 
 // Somme globale des fonds bloqués (Montant exact si fixe, Montant max si variable)

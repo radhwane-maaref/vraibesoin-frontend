@@ -45,7 +45,7 @@
       </button>
     </div>
 
-    <form @submit.prevent="handleLogin" class="w-full max-w-sm space-y-5">
+    <form @submit.prevent="handleLogin" novalidate class="w-full max-w-sm space-y-5">
       <div class="space-y-1.5">
         <label for="email" class="block text-sm font-medium text-[#374151]"
           >Email</label
@@ -74,7 +74,13 @@
             v-model="formData.email"
             placeholder="exemple@email.com"
             autocomplete="username"
-            class="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#5A877E] focus:border-transparent outline-none transition-all placeholder-gray-400"
+            :class="[
+              'block w-full pl-11 pr-4 py-3.5 border rounded-2xl text-sm outline-none transition-all placeholder-gray-400',
+              authStore.error
+                ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30 text-red-900'
+                : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E] focus:border-transparent'
+            ]"
+            @input="authStore.error = ''"
             required
           />
         </div>
@@ -108,7 +114,13 @@
             v-model="formData.password"
             placeholder="••••••••"
             autocomplete="current-password"
-            class="block w-full pl-11 pr-12 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#5A877E] focus:border-transparent outline-none transition-all placeholder-gray-400 tracking-widest"
+            :class="[
+              'block w-full pl-11 pr-12 py-3.5 border rounded-2xl text-sm outline-none transition-all placeholder-gray-400 tracking-widest',
+              authStore.error
+                ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30 text-red-900'
+                : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E] focus:border-transparent'
+            ]"
+            @input="authStore.error = ''"
             required
           />
           <button
@@ -288,6 +300,7 @@ const togglePasswordVisibility = () => {
  */
 const handleLogin = async () => {
   try {
+    googleError.value = "";
     await authStore.login({
       email: formData.email,
       password: formData.password,
@@ -326,6 +339,7 @@ const { login: loginWithGoogle } = useTokenClient({
       }
     } catch (err) {
       console.error("Erreur SSO Google :", err);
+      authStore.error = "";
 
       const backendError =
         err.response?.data?.error || err.response?.data?.non_field_errors?.[0];

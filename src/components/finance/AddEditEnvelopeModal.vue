@@ -76,7 +76,12 @@
                 </p>
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
+              <div
+                :class="[
+                  'grid gap-4',
+                  envelope ? 'grid-cols-2' : 'grid-cols-1',
+                ]"
+              >
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-1"
                     >Montant alloué</label
@@ -98,7 +103,7 @@
                   </div>
                 </div>
 
-                <div>
+                <div v-if="envelope">
                   <label class="block text-sm font-semibold text-gray-700 mb-1"
                     >Total dépensé</label
                   >
@@ -107,14 +112,14 @@
                       v-model.number="form.total_spent"
                       type="number"
                       step="0.01"
+                      readonly
                       :class="[
-                        'w-full px-4 py-3 bg-white border rounded-2xl outline-none transition-all pr-8',
+                        'w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none transition-all pr-8 text-gray-500 cursor-not-allowed',
                         errors.total_spent
                           ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30'
-                          : 'border-gray-200 focus:border-[#5B8C85] focus:ring-2 focus:ring-[#5B8C85]/20',
+                          : 'border-gray-200',
                       ]"
                       placeholder="0.00"
-                      @input="clearError('total_spent')"
                     />
                   </div>
                 </div>
@@ -140,6 +145,7 @@
                   <input
                     v-model="form.start_date"
                     type="date"
+                    :min="minStartDate"
                     :class="[
                       'w-full px-4 py-3 bg-white border rounded-2xl outline-none transition-all text-sm',
                       errors.dates
@@ -187,6 +193,7 @@
                 />
               </div>
 
+              <!-- Confirmation de suppression -->
               <div
                 v-if="showDeleteConfirm"
                 class="mt-4 p-4 bg-red-50 rounded-2xl border border-red-100"
@@ -212,9 +219,39 @@
                 </div>
               </div>
 
+              <!-- Confirmation de terminaison -->
+              <div
+                v-else-if="showTerminateConfirm"
+                class="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200"
+              >
+                <p class="text-sm text-amber-800 font-bold mb-1 text-center">
+                  Terminer cette enveloppe ?
+                </p>
+                <p class="text-xs text-amber-700 mb-3 text-center">
+                  {{ computedRemainder.toFixed(2) }} {{ currencyCode }} seront restitués à votre solde principal.
+                </p>
+                <div class="flex gap-3">
+                  <button
+                    type="button"
+                    @click="showTerminateConfirm = false"
+                    class="flex-1 py-2.5 bg-white text-gray-700 rounded-xl text-sm font-bold border border-gray-200 hover:bg-gray-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    @click="confirmTerminate"
+                    class="flex-1 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-bold hover:bg-amber-700 transition-colors shadow-sm"
+                  >
+                    Oui, terminer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Boutons d'action par défaut -->
               <div v-else class="pt-2 flex gap-3">
                 <button
-                  v-if="envelope"
+                  v-if="envelope && form.total_spent === 0"
                   type="button"
                   @click="showDeleteConfirm = true"
                   class="w-1/3 py-3 px-4 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-colors"
@@ -222,8 +259,18 @@
                   Supprimer
                 </button>
                 <button
+                  v-if="envelope && form.total_spent > 0"
+                  type="button"
+                  @click="showTerminateConfirm = true"
+                  class="w-1/3 py-3 px-4 bg-amber-50 text-amber-600 rounded-2xl font-bold hover:bg-amber-100 transition-colors"
+                >
+                  Terminer
+                </button>
+                <button
                   type="submit"
-                  :class="envelope ? 'w-2/3' : 'w-full'"
+                  :class="
+                    envelope && (form.total_spent === 0 || form.total_spent > 0) ? 'w-2/3' : 'w-full'
+                  "
                   class="py-3 px-4 bg-[#5B8C85] text-white rounded-2xl font-bold hover:bg-[#4a736d] transition-colors shadow-md"
                 >
                   {{ envelope ? "Enregistrer" : "Créer l'enveloppe" }}
@@ -249,25 +296,34 @@ const props = defineProps({
   envelope: Object,
 });
 
-const emit = defineEmits(["close", "save", "delete"]);
+const emit = defineEmits(["close", "save", "delete", "terminate"]);
 
 const currencyStore = useCurrencyStore();
 const financeStore = useFinanceStore();
 const envelopeStore = useEnvelopeStore();
 const showDeleteConfirm = ref(false);
+const showTerminateConfirm = ref(false);
 
 const currencyCode = computed(
   () => currencyStore.currentCurrency?.code || "TND",
 );
 
 const categories = [
-  { value: "vacation", label: "🏖️ Vacances" },
-  { value: "holidays", label: "🎁 Fêtes / Cadeaux" },
-  { value: "project", label: "🚀 Grand Projet" },
-  { value: "emergency", label: "⚠️ Urgence" },
+  { value: "vacation", label: "Vacances" },
+  { value: "holidays", label: "Fêtes / Cadeaux" },
+  { value: "project", label: "Grand Projet" },
+  { value: "emergency", label: "Urgence" },
 ];
 
 const getToday = () => new Date().toISOString().split("T")[0];
+
+const minStartDate = computed(() => {
+  const today = getToday();
+  if (props.envelope && props.envelope.start_date < today) {
+    return props.envelope.start_date;
+  }
+  return today;
+});
 
 const defaultForm = () => ({
   name: "",
@@ -313,6 +369,7 @@ watch(
         : defaultForm();
       errors.value = {};
       showDeleteConfirm.value = false;
+      showTerminateConfirm.value = false;
     }
   },
 );
@@ -332,6 +389,11 @@ const validateForm = () => {
 
   const amount = parseFloat(form.value.amount);
   const spent = parseFloat(form.value.total_spent) || 0;
+
+  if (isNaN(amount) || amount <= 0) {
+    errors.value.amount = "Le montant alloué doit être supérieur à 0.";
+    isValid = false;
+  }
 
   if (spent < 0) {
     errors.value.total_spent = "Les dépenses ne peuvent pas être négatives.";
@@ -354,14 +416,16 @@ const validateForm = () => {
   const endDate = new Date(form.value.end_date);
   const today = new Date(getToday());
 
+  const minValidDate = new Date(minStartDate.value);
+
   // Validation Chronologique Interractive
   if (endDate < startDate) {
     errors.value.dates =
       "La date de fin doit être égale ou postérieure à la date de début.";
     isValid = false;
-  } else if (!props.envelope && startDate < today) {
+  } else if (startDate < minValidDate) {
     errors.value.dates =
-      "La date de début d'une nouvelle enveloppe ne peut pas être dans le passé.";
+      "La date de début ne peut pas être dans le passé (sauf pour conserver la date d'une enveloppe déjà en cours).";
     isValid = false;
   }
 
@@ -376,5 +440,15 @@ const submitForm = () => {
 
 const confirmDelete = () => {
   emit("delete", form.value.id);
+};
+
+const computedRemainder = computed(() => {
+  const amount = parseFloat(form.value.amount) || 0;
+  const spent = parseFloat(form.value.total_spent) || 0;
+  return Math.max(0, amount - spent);
+});
+
+const confirmTerminate = () => {
+  emit("terminate", form.value.id);
 };
 </script>

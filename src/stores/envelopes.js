@@ -88,5 +88,34 @@ export const useEnvelopeStore = defineStore("envelopes", {
         await this.fetchEnvelopes();
       }
     },
+    async terminateEnvelope(id) {
+      try {
+        const res = await api.post(`/envelopes/${id}/terminate/`);
+        await this.fetchEnvelopes();
+        return res.data;
+      } catch (error) {
+        console.warn(
+          `API Stub: /envelopes/${id}/terminate/ POST not available. Terminating locally.`,
+        );
+        const index = localMockDB.findIndex((e) => e.id === id);
+        let remainder = 0;
+        if (index !== -1) {
+          const env = localMockDB[index];
+          remainder = Math.max(
+            0,
+            parseFloat(env.amount) - parseFloat(env.total_spent || 0)
+          );
+          // Set end_date to yesterday to mark it as ended
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          localMockDB[index] = {
+            ...env,
+            end_date: yesterday.toISOString().split("T")[0],
+          };
+        }
+        await this.fetchEnvelopes();
+        return { message: "Enveloppe terminée localement.", remainder_refunded: remainder };
+      }
+    },
   },
 });

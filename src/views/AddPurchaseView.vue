@@ -226,20 +226,11 @@
               </div>
 
               <div class="relative">
-                <select
+                <CustomSelect
                   v-model="formData.product_category"
-                  class="w-full h-[58px] pl-5 pr-10 py-4 border border-gray-200 rounded-3xl text-[#1F2937] font-semibold focus:ring-2 focus:ring-[#5A877E] outline-none transition-all shadow-sm bg-white appearance-none"
-                  required
-                >
-                  <option value="" disabled>Catégorie</option>
-                  <option
-                    v-for="cat in categories"
-                    :key="cat.value"
-                    :value="cat.value"
-                  >
-                    {{ cat.label }}
-                  </option>
-                </select>
+                  :options="categories"
+                  placeholder="Catégorie"
+                />
               </div>
             </div>
           </div>
@@ -587,21 +578,25 @@ const walletOptions = computed(() => {
   const availableMain =
     mainBalance - (parseFloat(envelopeStore.totalReserved) || 0);
 
-  options.push({
-    value: "main",
-    label: `Portefeuille Principal (${availableMain.toFixed(2)} ${currency})`,
-    disabled: availableMain <= 0,
-    balance: availableMain,
-  });
+  if (availableMain > 0) {
+    options.push({
+      value: "main",
+      label: `Portefeuille Principal (${availableMain.toFixed(2)} ${currency})`,
+      disabled: false,
+      balance: availableMain,
+    });
+  }
 
   envelopeStore.activeEnvelopes.forEach((env) => {
-    const envBalance = parseFloat(env.amount) || 0;
-    options.push({
-      value: `env_${env.id}`,
-      label: `${env.name || env.title || "Enveloppe " + env.id} (${envBalance.toFixed(2)} ${currency})`,
-      disabled: envBalance <= 0,
-      balance: envBalance,
-    });
+    const envBalance = Math.max(0, (parseFloat(env.amount) || 0) - (parseFloat(env.total_spent) || 0));
+    if (envBalance > 0) {
+      options.push({
+        value: `env_${env.id}`,
+        label: `${env.name || env.title || "Enveloppe " + env.id} (${envBalance.toFixed(2)} ${currency})`,
+        disabled: false,
+        balance: envBalance,
+      });
+    }
   });
 
   return options;

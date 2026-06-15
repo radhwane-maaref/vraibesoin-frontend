@@ -25,25 +25,6 @@
       <h3 class="text-lg sm:text-xl font-semibold text-slate-900">
         Mes revenus
       </h3>
-      <button
-        @click="openAddModal"
-        class="flex items-center gap-1.5 px-4 py-2 bg-[#E1EBE8] text-[#5B8C85] rounded-full text-xs font-bold hover:bg-[#d2e2de] transition-colors active:scale-95"
-      >
-        <svg
-          class="w-3.5 h-3.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        Ajouter
-      </button>
     </div>
 
     <div
@@ -67,7 +48,7 @@
         <li
           v-for="income in displayedIncomes"
           :key="income.id"
-          class="relative overflow-hidden rounded-[16px] bg-[#F9FAFB]"
+          class="relative overflow-hidden rounded-[16px] bg-[#F8F6F2]"
         >
           <!-- Actions Container (underneath/revealed on swipe) -->
           <div
@@ -154,7 +135,10 @@
     </div>
 
     <!-- Voir tout moved to the bottom to match SecuredVault -->
-    <div v-if="currentIncomes.length > limit && limit !== null" class="pt-3 text-center border-t border-gray-100 mt-2">
+    <div
+      v-if="currentIncomes.length > limit && limit !== null"
+      class="pt-3 text-center border-t border-gray-100 mt-2"
+    >
       <router-link
         :to="{ name: 'incomes' }"
         class="inline-block px-4 py-2 text-[#5B8C85] text-sm font-bold hover:bg-[#F8F6F2] rounded-full transition-colors"
@@ -435,7 +419,9 @@ const showToast = (msg, type = "success") => {
 };
 
 const currentIncomes = computed(() => {
-  return props.customIncomes !== null ? props.customIncomes : financeStore.incomes;
+  return props.customIncomes !== null
+    ? props.customIncomes
+    : financeStore.incomes;
 });
 
 const displayedIncomes = computed(() => {

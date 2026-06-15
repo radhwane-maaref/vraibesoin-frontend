@@ -45,7 +45,7 @@
       </button>
     </div>
 
-    <form @submit.prevent="handleRegister" class="w-full max-w-sm space-y-4">
+    <form @submit.prevent="handleRegister" novalidate class="w-full max-w-sm space-y-4">
       <div class="space-y-1.5">
         <label for="email" class="block text-sm font-medium text-[#374151]"
           >Email</label
@@ -74,7 +74,13 @@
             v-model="formData.email"
             placeholder="exemple@email.com"
             autocomplete="username"
-            class="block w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#5A877E] focus:border-transparent outline-none transition-all placeholder-gray-400"
+            :class="[
+              'block w-full pl-11 pr-4 py-3.5 border rounded-2xl text-sm outline-none transition-all placeholder-gray-400',
+              authStore.error && !showOtpModal
+                ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30 text-red-900'
+                : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E] focus:border-transparent'
+            ]"
+            @input="authStore.error = ''"
             required
           />
         </div>
@@ -108,7 +114,13 @@
             v-model="formData.password"
             placeholder="••••••••"
             autocomplete="current-password"
-            class="block w-full pl-11 pr-12 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#5A877E] focus:border-transparent outline-none transition-all placeholder-gray-400 tracking-widest"
+            :class="[
+              'block w-full pl-11 pr-12 py-3.5 border rounded-2xl text-sm outline-none transition-all placeholder-gray-400 tracking-widest',
+              authStore.error && !showOtpModal
+                ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30 text-red-900'
+                : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E] focus:border-transparent'
+            ]"
+            @input="authStore.error = ''"
             required
           />
           <button
@@ -184,7 +196,13 @@
             v-model="formData.confirm_password"
             placeholder="••••••••"
             autocomplete="new-password"
-            class="block w-full pl-11 pr-12 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#5A877E] focus:border-transparent outline-none transition-all placeholder-gray-400 tracking-widest"
+            :class="[
+              'block w-full pl-11 pr-12 py-3.5 border rounded-2xl text-sm outline-none transition-all placeholder-gray-400 tracking-widest',
+              authStore.error && !showOtpModal
+                ? 'border-red-400 focus:ring-2 focus:ring-red-400/20 bg-red-50/30 text-red-900'
+                : 'border-gray-200 focus:ring-2 focus:ring-[#5A877E] focus:border-transparent'
+            ]"
+            @input="authStore.error = ''"
             required
           />
         </div>
@@ -382,6 +400,7 @@ const handleRegister = async () => {
   try {
     isRequestingOtp.value = true;
     authStore.error = "";
+    googleError.value = "";
 
     await api.post("/auth/request-otp/", { email: formData.email });
 
@@ -555,6 +574,7 @@ const { login: registerWithGoogle } = useTokenClient({
         await router.push("/dashboard");
       }
     } catch (err) {
+      authStore.error = "";
       const backendError =
         err.response?.data?.error || err.response?.data?.non_field_errors?.[0];
       if (backendError) {

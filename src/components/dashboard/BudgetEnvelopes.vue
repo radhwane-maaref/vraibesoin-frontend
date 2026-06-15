@@ -99,16 +99,20 @@
 
     <div v-if="envelopeStore.envelopes.length > 0" class="space-y-4">
       <div
-        v-for="env in envelopeStore.processedEnvelopes"
+        v-for="env in recentEnvelopes"
         :key="env.id"
-        @click="openEditModal(env)"
-        class="flex flex-col p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#E1EBE8] hover:shadow-sm cursor-pointer transition-all group"
+        @click="env.status === 'active' ? openEditModal(env) : null"
+        :class="[
+          'flex flex-col p-4 bg-white rounded-2xl border border-gray-100 transition-all group',
+          env.status === 'active' ? 'hover:border-[#E1EBE8] hover:shadow-sm cursor-pointer' : 'opacity-80'
+        ]"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <div>
               <p
-                class="font-bold text-sm text-gray-800 group-hover:text-[#5B8C85] transition-colors"
+                class="font-bold text-sm text-gray-800 transition-colors"
+                :class="env.status === 'active' ? 'group-hover:text-[#5B8C85]' : ''"
               >
                 {{ env.name }}
               </p>
@@ -163,6 +167,16 @@
           </div>
         </div>
       </div>
+
+      <!-- Bouton Voir Tout -->
+      <div v-if="envelopeStore.envelopes.length > 3" class="text-center mt-4">
+        <router-link
+          :to="{ name: 'envelopes' }"
+          class="text-sm font-bold text-[#5B8C85] hover:text-[#4a736d] hover:underline transition-colors active:scale-95 inline-block"
+        >
+          Voir tout
+        </router-link>
+      </div>
     </div>
 
     <div
@@ -186,6 +200,7 @@
       @close="isModalOpen = false"
       @save="handleSave"
       @delete="handleDelete"
+      @terminate="handleTerminate"
     />
   </div>
 </template>
@@ -204,6 +219,17 @@ const envelopeStore = useEnvelopeStore();
 const currencyCode = computed(
   () => currencyStore.currentCurrency?.code || "TND",
 );
+
+const recentEnvelopes = computed(() => {
+  const envs = [...(envelopeStore.processedEnvelopes || [])];
+  return envs
+    .sort((a, b) => {
+      const dateA = new Date(a.updated_at || a.created_at || a.start_date).getTime();
+      const dateB = new Date(b.updated_at || b.created_at || b.start_date).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 3);
+});
 
 // Logique intelligente : Nous soustrayons de la réserve ce qui a DÉJÀ été dépensé
 const realTotalReserved = computed(() => {
@@ -310,6 +336,20 @@ const handleDelete = async (id) => {
     isModalOpen.value = false;
   } catch (error) {
     showToast("Impossible de supprimer l'enveloppe.", "error");
+  }
+};
+
+const handleTerminate = async (id) => {
+  try {
+    const result = await envelopeStore.terminateEnvelope(id);
+    // Synchroniser le solde principal côté frontend
+    if (result.remainder_refunded > 0) {
+      financeStore.balance += result.remainder_refunded;
+    }
+    showToast("Enveloppe terminée avec succès.", "success");
+    isModalOpen.value = false;
+  } catch (error) {
+    showToast("Impossible de terminer l'enveloppe.", "error");
   }
 };
 
