@@ -1,8 +1,8 @@
 <template>
   <div
-    class="p-4 sm:p-6 pb-24 w-full max-w-lg md:max-w-xl lg:max-w-2xl mx-auto bg-[#F8F6F2] min-h-screen"
+    class="p-4 sm:p-6 md:p-8 lg:p-10 pb-24 w-full bg-[#F8F6F2] min-h-screen"
   >
-    <div class="flex items-center mb-6">
+    <div class="flex items-center mb-6 md:mb-8">
       <button
         @click="$router.back()"
         class="p-2 -ml-2 rounded-full hover:bg-gray-200 transition-colors active:scale-95 shrink-0"
@@ -22,7 +22,7 @@
         </svg>
       </button>
       <h1
-        class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight flex-1 text-center pr-6"
+        class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight flex-1 text-center pr-6"
       >
         Mes Enveloppes
       </h1>
@@ -73,10 +73,10 @@
       </div>
     </transition>
 
-    <div v-if="envelopeStore.envelopes.length > 0" class="mt-2 w-full">
+    <div v-if="envelopeStore.envelopes.length > 0" class="mt-4 md:mt-6 w-full">
       <transition-group
         tag="ul"
-        class="flex flex-col gap-3 md:gap-4"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6"
         enter-active-class="transition ease-out duration-200 transform"
         enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0"
@@ -87,7 +87,7 @@
         <li
           v-for="env in sortedEnvelopes"
           :key="env.id"
-          class="relative overflow-hidden rounded-[16px] bg-[#F8F6F2] shadow-sm hover:shadow-md transition-shadow duration-300"
+          class="relative overflow-hidden rounded-[16px] bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
         >
           <!-- Actions Container (underneath/revealed on swipe) -->
           <div
@@ -191,7 +191,7 @@
 
     <div
       v-else
-      class="text-center py-16 px-4 bg-white rounded-3xl border border-dashed border-gray-200 mt-6 shadow-sm flex flex-col items-center justify-center"
+      class="text-center py-16 md:py-24 px-4 bg-white rounded-3xl border border-dashed border-gray-200 mt-6 md:mt-10 shadow-sm flex flex-col items-center justify-center"
     >
       <div
         class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4"
