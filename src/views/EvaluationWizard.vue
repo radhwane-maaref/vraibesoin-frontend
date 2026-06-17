@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#F8F6F2] font-['DM_Sans',_sans-serif] pb-12">
     <div class="max-w-3xl mx-auto w-full h-full flex flex-col">
-      <div class="relative z-10 border-b border-gray-100 bg-white/50">
+      <div class="relative z-10 border-b border-gray-100 bg-[#F8F6F2]">
         <header
           class="px-4 sm:px-6 py-4 sm:py-5 flex justify-center items-center relative max-w-3xl mx-auto w-full"
         >
@@ -12,7 +12,7 @@
               >Questions de réflexion</span
             >
             <span v-else-if="currentStep === 'LOADING'">Vrai Besoin</span>
-            <span v-else>Analyse en cours</span>
+            <span v-else>Analyse de besoin</span>
           </h1>
           <button
             @click="showCancelModal = true"
@@ -49,7 +49,8 @@
               v-if="intentionData.product_price"
               class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider"
             >
-              {{ intentionData.product_price }} {{ currencyStore.currentCurrency.code }}
+              {{ intentionData.product_price }}
+              {{ currencyStore.currentCurrency.code }}
             </span>
           </div>
           <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -73,7 +74,9 @@
             class="absolute inset-0 border-4 border-[#5A877E] rounded-full border-t-transparent animate-spin"
           ></div>
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-[#5A877E] font-bold text-lg sm:text-xl">{{ progressPercentage }}%</span>
+            <span class="text-[#5A877E] font-bold text-lg sm:text-xl"
+              >{{ progressPercentage }}%</span
+            >
           </div>
         </div>
         <h2
@@ -788,12 +791,12 @@ const submitFinalDecision = async () => {
     await api.patch(`/purchase-intentions/${intentionId}/final-decision/`, {
       user_final_decision: pendingAction.value,
     });
-    
-    if (pendingAction.value === 'BUY') {
+
+    if (pendingAction.value === "BUY") {
       await financeStore.fetchFinanceData();
       await envelopeStore.fetchEnvelopes();
     }
-    
+
     showModal.value = false;
     router.push({ name: "dashboard" });
   } catch (error) {
